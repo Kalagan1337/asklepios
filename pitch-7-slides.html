@@ -543,7 +543,7 @@ html[lang="en"] .i-gap p{font-size:36px}
 .hz-f{display:flex;flex-wrap:wrap;gap:10px}
 .hz-f span{font-size:23px;line-height:1.2;padding:7px 16px;border-radius:999px;background:rgba(95,209,201,.08);border:1px solid rgba(95,209,201,.3);color:#d7f5f2;white-space:nowrap}
 .hz-e{font-style:normal;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);line-height:1.3}
-.hz.hz-src .hz-r{grid-template-columns:56px 380px 44px 1fr}
+.hz.hz-src .hz-r{grid-template-columns:56px 420px 44px 1fr}
 .hz.hz-src .hz-f span{font-size:22px}
 .hz-cite{margin:22px 0 0;font-size:19px;line-height:1.4;color:var(--dim)}
 /* submission deck, data slide: compact rows and five data tiles */
@@ -556,14 +556,14 @@ html[lang="en"] .i-gap p{font-size:36px}
 .m-submission .hz-ar{width:34px}
 .m-submission .hz-f{gap:6px}
 .m-submission .hz.hz-src .hz-f span{font-size:18px;padding:4px 12px}
-.m-submission .hz-e{font-size:13px}
+.m-submission .hz-e{font-size:15px}
 .m-submission .dt-lbl{margin-top:24px}
 .dt5{grid-template-columns:repeat(5,1fr);gap:18px;margin-top:14px}
 .dt5 .dt-t{padding:18px 20px 16px}
 .dt5 .dt-v{font-size:46px}
 .dt5 .dt-v small{font-size:21px}
 .dt5 .dt-t p{margin-top:10px;font-size:18px;line-height:1.3}
-.dt5 .dt-t .src{margin-top:8px;font-size:14px}
+.dt5 .dt-t .src{margin-top:8px;font-size:15px}
 .dt5 .dt-use{margin-top:12px;padding-top:10px;font-size:17px;gap:10px}
 .dt5 .dt-use .ic{width:24px;height:24px}
 .m-submission .dt-note{margin-top:14px;font-size:16px;line-height:1.4}
@@ -588,7 +588,7 @@ html[lang="en"] .i-gap p{font-size:36px}
 </div>
 <script>
 const LOCAL_BUILD = true;
-/* Team, shown on the last slide of the full deck and on the title of the submission and defense decks.
+/* Team, shown on the first and last slides of the full deck and on the title of the submission and defense decks.
    Members are written in the slide's language. Backtick strings, so a name with an apostrophe is safe. */
 const TEAM_INFO = { name: `vod0laz1`, members: { uk: `Максим, Матвій, Дмитро, Станіслав, Денис`, en: `Maksym, Matvii, Dmytro, Stanislav, Denys` } };
 /* Public link to the app: replace the placeholder by plain search-and-replace. Until then the slides say index.html. */
@@ -665,15 +665,19 @@ ${under ? under + '</div>' : ''}${side}</div>`;
 const SLIDES = [
 {
   id: 'title', edge: true, mood: [1480, 920, 860, .32, 'm'],
-  uk: { name: 'Асклепій', tag: 'Лікар, який *завжди на борту*', sub: 'Офлайн ШІ-медик для екіпажу, що летить на Марс', foot: 'NASA Space Apps Challenge 2026 · ПЗ для моніторингу здоров’я астронавтів у космічних місіях' },
-  en: { name: 'Asklepios', tag: 'The doctor who is *always on board*', sub: 'An offline AI medic for a crew on its way to Mars', foot: 'NASA Space Apps Challenge 2026 · Create Health Monitoring Software for Astronauts on Space Missions' },
-  html: t => `<div class="ctr">
+  uk: { name: 'Асклепій', tag: 'Лікар, який *завжди на борту*', sub: 'Офлайн ШІ-медик для екіпажу, що летить на Марс', team: 'Команда:', mem: 'Учасники:',
+    foot: 'NASA Space Apps Challenge 2026 · ПЗ для моніторингу здоров’я астронавтів у космічних місіях' },
+  en: { name: 'Asklepios', tag: 'The doctor who is *always on board*', sub: 'An offline AI medic for a crew on its way to Mars', team: 'Team:', mem: 'Members:',
+    foot: 'NASA Space Apps Challenge 2026 · Create Health Monitoring Software for Astronauts on Space Missions' },
+  /* the team block is the thank-you slide's, so the deck opens and closes with the same names */
+  html: (t, L) => `<div class="ctr t1">
 <div class="orbit"><svg viewBox="0 0 1600 700" aria-hidden="true"><path class="draw" ${D(200)} pathLength="1" d="M100 350a700 250 0 1 0 1400 0a700 250 0 1 0 -1400 0"/></svg><i class="odot"></i></div>
 <div class="lw pop" ${D(120)}><i class="ring"></i><i class="ring r2"></i><i class="logo big"></i></div>
 <h1 class="h1" aria-label="${esc(t.name)}">${kc(t.name, 380, 55)}</h1>
 <p class="t-tag">${kt(t.tag, 900, 70)}</p>
 <p class="sub up" ${D(1350)}>${esc(t.sub)}</p>
-<div class="foot up" ${D(1600)}>${esc(t.foot)}</div>
+<div class="team-box up" ${D(1500)}>${teamRow(t.team, TEAM_INFO.name)}${teamRow(t.mem, members(L), true)}</div>
+<div class="foot up" ${D(1650)}>${esc(t.foot)}</div>
 <div class="hint fade" ${D(2700)}>${hint()}</div></div>`
 },
 {
@@ -748,13 +752,13 @@ ${pSky(t, 250)}
 {
   id: 'why', mood: [1720, 160, 720, .2, 'm'],
   uk: { k: 'Пояснюване рішення', h: 'Кожне рішення показує, *чому*', cap: 'Як система ухвалила рішення',
-    ev: [['SpO₂ 90% при нормі 98%', 4], ['CO₂ у модулі 8,5 мм рт. ст. при нормативі NASA 3', 4], ['Запаморочення', 3], ['Задишка', 3]],
+    ev: [['SpO₂ 90% при нормі 98%', 4], ['CO₂ у модулі 7,0 мм рт. ст. при нормативі NASA 3', 4], ['Запаморочення', 3], ['Задишка', 3]],
     sum: 'Сума доказів', p: 'Протокол', dx: 'Надлишок CO₂', dxs: 'і нестача кисню', lv: 'Терміново',
     sc: ['Самодопомога', 'Потрібен медофіцер', 'Терміново', 'Загроза життю'],
     st: ['Перейти в модуль із нормальним повітрям', 'Надягнути кисневу маску', 'Сісти, зафіксуватися, дихати повільно', 'Замінити поглинач CO₂'],
     re: 'Повторна перевірка показників: до і після' },
   en: { k: 'Explainable decisions', h: 'Every decision shows *why*', cap: 'How the system decided',
-    ev: [['SpO₂ 90% vs baseline 98%', 4], ['CO₂ in module 8.5 mmHg vs NASA limit 3', 4], ['Dizziness', 3], ['Shortness of breath', 3]],
+    ev: [['SpO₂ 90% vs baseline 98%', 4], ['CO₂ in module 7.0 mmHg vs NASA limit 3', 4], ['Dizziness', 3], ['Shortness of breath', 3]],
     sum: 'Total evidence', p: 'Protocol', dx: 'Excess CO₂', dxs: 'and low oxygen', lv: 'Urgent',
     sc: ['Self-care', 'Needs medical officer', 'Urgent', 'Life-threatening'],
     st: ['Move to a module with normal air', 'Put on the oxygen mask', 'Sit down, strap in, breathe slowly', 'Replace the CO₂ scrubber'],
@@ -816,13 +820,14 @@ ${checkin(CHECKIN[L], 1500, 'row')}`,
 /* SpO₂ baselines of the app's default crew: Commander, Flight engineer, Medical officer, Pilot */
 const CREW_SPO2 = [98, 98, 99, 98];
 /* NASA Human Research Program: the five hazards of human spaceflight (nasa.gov/hrp/hazards), in NASA's order,
-   and what Asklepios does about each. [icon, hazard, features, evidence] */
+   and what Asklepios does about each. [icon, hazard, features, evidence]
+   The hazard names are the agreed ones, the same as the app's "NASA HRP:" tags and the README. */
 const HZ = {
   uk: [['rad', 'Космічна радіація', ['Доза радіації', 'Сонячний спалах', 'Активність ліків'], 'Curiosity RAD · CSA 2026'],
-    ['iso', 'Ізоляція і замкнутість', ['Щоденна перевірка: сон і настрій', 'Тренд за 7 днів', 'Нагадування щодня'], 'HRP: сон, поведінка'],
-    ['dist', 'Відстань від Землі', ['Рішення офлайн', 'Аптечка на всю місію', 'Режим «Медик захворів»', 'Навчальні тривоги'], 'NASA: 3–22 хв, ~13 днів'],
+    ['iso', 'Ізоляція та замкнутий простір', ['Щоденна перевірка: сон і настрій', 'Тренд за 7 днів', 'Нагадування щодня'], 'HRP: сон, поведінка'],
+    ['dist', 'Віддаленість від Землі', ['Рішення офлайн', 'Аптечка на всю місію', 'Режим «Медик захворів»', 'Навчальні тривоги'], 'NASA: 3–22 хв, ~13 днів'],
     ['grav', 'Гравітаційні поля', ['SANS', 'Біль у спині', 'Ниркова коліка', 'Ритм серця'], 'HRP: SANS, кістки, серце'],
-    ['wind', 'Вороже замкнуте середовище', ['Накопичення CO₂', 'Вартовий розгерметизації', 'Декомпресія після виходу'], 'NASA-STD-3001: CO₂ ≤ 3']],
+    ['wind', 'Ворожі замкнені середовища', ['Накопичення CO₂', 'Вартовий розгерметизації', 'Декомпресія після виходу'], 'NASA-STD-3001: CO₂ ≤ 3']],
   en: [['rad', 'Space radiation', ['Radiation dose', 'Solar flare', 'Drug potency'], 'Curiosity RAD · CSA 2026'],
     ['iso', 'Isolation and confinement', ['Daily check-in: sleep and mood', '7-day trend', 'Daily reminder'], 'HRP: sleep, behavior'],
     ['dist', 'Distance from Earth', ['Offline decisions', 'Pharmacy for the whole mission', '“The medic is ill” mode', 'Training alarms'], 'NASA: 3–22 min, ~13 days'],
@@ -881,11 +886,11 @@ SLIDES.push(
   uk: { k: 'Тестовий режим', h: 'Навчальна тривога: *2 хвилини* на порятунок', al: 'Навчальна тривога',
     sc: ['Задуха', 'Аритмія', 'Ниркова коліка', 'Декомпресія'], hr: 'Пульс', bpm: 'уд/хв',
     worse: 'Без допомоги стан погіршується', stab: 'Стан стабілізовано', rem: 'залишилося', res: 'Результат', g: 'Відмінно',
-    br: ['Час: 0:33 із 2:00', 'Протокол: надлишок CO₂', 'Стан: стабілізовано'], gs: ['Відмінно', 'Добре', 'Встигли в останню мить', 'Не встигли'] },
+    br: ['Час: 0:33 із 2:00', 'Протокол: Надлишок CO₂ і нестача кисню', 'Стан: стабілізовано'], gs: ['Відмінно', 'Добре', 'Встигли в останню мить', 'Не встигли'] },
   en: { k: 'Test mode', h: 'Training alarm: *2 minutes* to save a life', al: 'Training alarm',
     sc: ['Suffocation', 'Arrhythmia', 'Kidney colic', 'Decompression'], hr: 'Pulse', bpm: 'bpm',
     worse: 'Without help, it gets worse', stab: 'Condition stabilized', rem: 'remaining', res: 'Result', g: 'Excellent',
-    br: ['Time: 0:33 of 2:00', 'Protocol: excess CO₂', 'Condition: stabilized'], gs: ['Excellent', 'Good', 'Just in time', 'Too late'] },
+    br: ['Time: 0:33 of 2:00', 'Protocol: Excess CO₂ and low oxygen', 'Condition: stabilized'], gs: ['Excellent', 'Good', 'Just in time', 'Too late'] },
   html: (t, L, i) => `${hd(t, i)}
 <div class="d-grid"><div class="card d-alarm up" ${D(250)}><div class="d-al"><i></i>${esc(t.al)}</div>
 <div class="d-sc">${t.sc.map((s, k) => `<span class="${k ? '' : 'on'}">${esc(s)}</span>`).join('')}</div>
@@ -1139,22 +1144,25 @@ ${hzRows(HZ.en, 350, true)}
    Three decks share it; build-deck.js --set=… decides which slide list is in the page:
      full        SLIDES      bilingual pitch deck
      submission  SUB_SLIDES  English-only 7-slide Space Apps demo, no language switch
-     defense     DEF_SLIDES  5-slide deck for the local Zoom defense, Ukrainian by default */
+     defense     DEF_SLIDES  5-slide deck for the local Zoom defense, bilingual */
 const MODE = typeof DEF_SLIDES !== 'undefined' ? 'defense' : typeof SUB_SLIDES !== 'undefined' ? 'submission' : 'full';
 const DECK = MODE === 'defense' ? DEF_SLIDES : MODE === 'submission' ? SUB_SLIDES : SLIDES;
 const ONE_LANG = MODE === 'submission';
-/* the language choice is kept per deck: the full deck remembers it (localStorage); the defense deck only
-   for this tab (sessionStorage), so a fresh open for the defense always starts in Ukrainian */
+/* the language choice is remembered per deck (localStorage), as the app remembers its own */
 const KEY = MODE === 'defense' ? 'asklepios-defense-lang' : 'asklepios-deck-lang';
-function langStore() { try { return MODE === 'defense' ? window.sessionStorage : window.localStorage; } catch (e) { return null; } }
-/* language: ?lang= wins, then the saved choice, then the default
-   (full deck: Ukrainian only for a uk-* browser; defense deck: always Ukrainian) */
+function langStore() { try { return window.localStorage; } catch (e) { return null; } }
+/* language, the same rule as the app: ?lang= wins (any case; "ua" means uk), then the saved choice,
+   then Ukrainian for a browser whose language starts with "uk", otherwise English.
+   Each step below overrides the one before it. */
 let L = 'en';
 if (!ONE_LANG) {
-  if (MODE === 'defense') L = 'uk';
-  else try { if (String(navigator.language || '').toLowerCase().startsWith('uk')) L = 'uk'; } catch (e) { /* no navigator */ }
+  try { if (String(navigator.language || '').toLowerCase().startsWith('uk')) L = 'uk'; } catch (e) { /* no navigator */ }
   try { const s = langStore().getItem(KEY); if (s === 'uk' || s === 'en') L = s; } catch (e) { /* storage blocked: keep default */ }
-  try { const q = new URLSearchParams(location.search).get('lang'); if (q === 'uk' || q === 'en') L = q; } catch (e) { /* no query support */ }
+  try {
+    let q = String(new URLSearchParams(location.search).get('lang') || '').trim().toLowerCase();
+    if (q === 'ua') q = 'uk';
+    if (q === 'uk' || q === 'en') L = q;
+  } catch (e) { /* no query support */ }
 }
 const RMQ = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
 let RM = !!(RMQ && RMQ.matches);
