@@ -1,0 +1,1477 @@
+<!doctype html>
+<!-- Made with AI assistance: the code, text and graphics of these slides were made with an AI assistant (Claude, Anthropic). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Asklepios: an offline AI medic for a crew on its way to Mars. 7-slide demo for NASA Space Apps Challenge 2026, challenge “Create Health Monitoring Software for Astronauts on Space Missions”, team vod0laz1.">
+<meta name="ai-disclosure" content="Made with AI assistance: the code, text and graphics of these slides were made with an AI assistant (Claude, Anthropic).">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230c8783'/%3E%3Cpath d='M26 13h12v13h13v12H38v13H26V38H13V26h13z' fill='%23fff'/%3E%3C/svg%3E">
+<title>Asklepios — Project Demo</title>
+<style>
+:root{color-scheme:dark;--bg0:#060b14;--bg1:#0b1626;--bg2:#173552;--teal:#0c8783;--teal2:#5fd1c9;--mars:#d6683a;--red:#e5484d;--green:#2fbf71;--mut:#a9bccf;--dim:#7f93a8;--line:rgba(169,188,207,.16);--ease:cubic-bezier(.16,1,.3,1);--ease2:cubic-bezier(.65,0,.35,1);--back:cubic-bezier(.34,1.56,.64,1);--font:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#02050a}
+body{font-family:var(--font);color:#fff;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.nocur,.nocur *{cursor:none!important}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;transform-origin:50% 50%;transform:translate(-50%,-50%);background:radial-gradient(130% 100% at 18% 0%,var(--bg2) 0%,var(--bg1) 42%,var(--bg0) 100%)}
+#sky{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#deck{position:absolute;inset:0}
+.slide{position:absolute;inset:0;padding:100px 130px 0;visibility:hidden;opacity:0}
+.slide.on,.slide.out-f,.slide.out-b{visibility:visible;opacity:1}
+.slide.in-f{animation:sInF .95s var(--ease) both}
+.slide.in-b{animation:sInB .95s var(--ease) both}
+.slide.out-f{animation:sOutF .7s var(--ease2) both}
+.slide.out-b{animation:sOutB .7s var(--ease2) both}
+@keyframes sInF{from{opacity:0;transform:translateX(90px) scale(.96);filter:blur(14px)}to{opacity:1;transform:none;filter:none}}
+@keyframes sInB{from{opacity:0;transform:translateX(-90px) scale(1.04);filter:blur(14px)}to{opacity:1;transform:none;filter:none}}
+@keyframes sOutF{from{opacity:1;transform:none;filter:none}to{opacity:0;transform:translateX(-120px) scale(1.04);filter:blur(14px)}}
+@keyframes sOutB{from{opacity:1;transform:none;filter:none}to{opacity:0;transform:translateX(120px) scale(.96);filter:blur(14px)}}
+#sweep{position:absolute;top:0;left:-600px;width:600px;height:100%;pointer-events:none;opacity:0;z-index:4;background:linear-gradient(90deg,transparent,rgba(95,209,201,.08) 40%,rgba(95,209,201,.2) 50%,rgba(95,209,201,.08) 60%,transparent)}
+#sweep.sw-f{animation:swf .9s var(--ease2) both}
+#sweep.sw-b{animation:swb .9s var(--ease2) both}
+@keyframes swf{from{opacity:1;transform:translateX(0)}to{opacity:1;transform:translateX(3120px)}}
+@keyframes swb{from{opacity:1;transform:translateX(3120px)}to{opacity:1;transform:translateX(0)}}
+/* motion primitives: base = final state, keyframes hold the start */
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding:.12em .02em .16em;margin:-.12em -.02em -.16em}
+.wi{display:inline-block}
+.play .wi{animation:wUp .9s var(--ease) both;animation-delay:var(--d,0ms)}
+@keyframes wUp{from{transform:translateY(115%) rotate(4deg);opacity:0}to{transform:none;opacity:1}}
+.play .up{animation:up .85s var(--ease) both;animation-delay:var(--d,0ms)}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.play .pop{animation:pop .75s var(--back) both;animation-delay:var(--d,0ms)}
+@keyframes pop{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
+.play .grow{animation:grow 1.1s var(--ease) both;animation-delay:var(--d,0ms)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.play .draw{animation:draw 1.3s var(--ease2) backwards;animation-delay:var(--d,0ms)}
+.play .ic .draw{animation-duration:1.1s;animation-delay:calc(var(--d,0ms) + 250ms)}
+@keyframes draw{from{stroke-dasharray:1 2;stroke-dashoffset:1}to{stroke-dasharray:1 2;stroke-dashoffset:0}}
+@keyframes blink{50%{opacity:0}}
+@keyframes beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.45}}
+html.rm *,html.rm *::before,html.rm *::after{animation:none!important;transition:none!important}
+/* type + components */
+.kick{display:flex;align-items:center;gap:16px;font-size:24px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--teal2)}
+.kick b{color:var(--dim);font-weight:700;letter-spacing:.08em}
+.kick i{width:48px;height:2px;background:linear-gradient(90deg,var(--teal2),transparent)}
+.h2{font-size:80px;line-height:1.06;font-weight:700;letter-spacing:-.022em;margin:20px 0 0}
+.lead{font-size:30px;line-height:1.4;color:var(--mut);margin:18px 0 0;max-width:1400px}
+.acc{color:var(--teal2)}
+.src{display:block;font-style:normal;font-size:18px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-top:14px}
+.src::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal2);margin-right:10px;vertical-align:middle}
+.card{background:linear-gradient(180deg,rgba(23,53,82,.6),rgba(11,22,38,.62));border:1px solid var(--line);border-radius:30px;box-shadow:0 30px 80px -30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05)}
+.ico{width:76px;height:76px;border-radius:22px;display:grid;place-items:center;background:rgba(12,135,131,.16);border:1px solid rgba(95,209,201,.3);flex:none}
+.ico.big{width:96px;height:96px;border-radius:28px}.ico.big .ic{width:56px;height:56px}
+.ic{width:44px;height:44px;fill:none;stroke:var(--teal2);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:34px;height:34px}
+.caret{display:inline-block;width:3px;height:1.1em;background:var(--teal2);margin-left:4px;vertical-align:middle;animation:blink 1s steps(1) infinite}
+.logo{position:relative;display:block;width:64px;height:64px;border-radius:18px;background:linear-gradient(150deg,#16aca4,#0c8783 55%,#086663);box-shadow:0 10px 30px rgba(12,135,131,.45),inset 0 1px 0 rgba(255,255,255,.3)}
+.logo::before,.logo::after{content:"";position:absolute;left:50%;top:50%;background:#fff;border-radius:3px;transform:translate(-50%,-50%)}
+.logo::before{width:24%;height:62%}.logo::after{width:62%;height:24%}
+.logo.big{width:200px;height:200px;border-radius:54px;box-shadow:0 30px 90px rgba(12,135,131,.5),inset 0 2px 0 rgba(255,255,255,.3)}
+.logo.big::before,.logo.big::after{border-radius:10px}
+.play .logo.big::before{animation:armY .7s var(--back) .55s both}
+.play .logo.big::after{animation:armX .7s var(--back) .7s both}
+@keyframes armY{from{transform:translate(-50%,-50%) scaleY(0)}to{transform:translate(-50%,-50%)}}
+@keyframes armX{from{transform:translate(-50%,-50%) scaleX(0)}to{transform:translate(-50%,-50%)}}
+/* chrome */
+#brand{position:absolute;left:130px;bottom:40px;display:flex;align-items:center;gap:14px;font-size:22px;font-weight:600;color:#cfe0ee;opacity:.8;transition:opacity .6s;z-index:5}
+#brand .logo{width:34px;height:34px;border-radius:10px}
+.edge #brand{opacity:0}
+/* footer right: slide number */
+#meta{position:absolute;right:130px;bottom:40px;height:34px;display:flex;align-items:center;gap:22px;z-index:5}
+#num{font-size:22px;font-weight:600;letter-spacing:.12em;color:var(--mut);font-variant-numeric:tabular-nums}
+#lang{position:absolute;top:36px;right:56px;display:flex;gap:4px;padding:6px;border-radius:999px;background:rgba(6,11,20,.45);border:1px solid rgba(169,188,207,.15);opacity:.55;transition:opacity .3s;z-index:6}
+#lang:hover{opacity:1}
+#lang button{all:unset;cursor:pointer;font:600 18px/1 var(--font);letter-spacing:.1em;padding:10px 16px;border-radius:999px;color:var(--mut)}
+#lang button.on{background:rgba(95,209,201,.18);color:#fff}
+#lang button:focus-visible{outline:2px solid var(--teal2)}
+#track{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(169,188,207,.08);z-index:5}
+#bar{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--teal2));box-shadow:0 0 16px rgba(95,209,201,.6);transition:width .8s var(--ease)}
+/* 1 + 13: centred */
+.ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.orbit{position:absolute;left:160px;top:190px;width:1600px;height:700px;pointer-events:none}
+.orbit svg{width:100%;height:100%;overflow:visible}
+.orbit path{fill:none;stroke:rgba(95,209,201,.22);stroke-width:1.5}
+.odot{position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f6a676,#d6683a 60%,#8f3b1c);box-shadow:0 0 24px 6px rgba(214,104,58,.5);display:none}
+@supports (offset-path:path("M0 0")){.odot{display:block;offset-path:path("M100 350a700 250 0 1 0 1400 0a700 250 0 1 0 -1400 0");offset-rotate:0deg;animation:orb 18s linear infinite}}
+@keyframes orb{from{offset-distance:0%}to{offset-distance:100%}}
+.lw{position:relative;width:200px;height:200px;margin-bottom:44px}
+.lw .ring{position:absolute;inset:0;border-radius:54px;border:2px solid rgba(95,209,201,.55);animation:ringP 3s var(--ease) infinite}
+.lw .ring.r2{animation-delay:1.5s}
+@keyframes ringP{from{transform:scale(1);opacity:.8}to{transform:scale(1.9);opacity:0}}
+.h1{font-size:168px;line-height:1;font-weight:700;letter-spacing:-.03em;margin:0}
+.t-tag{font-size:56px;font-weight:600;margin:28px 0 0;letter-spacing:-.01em}
+.sub{font-size:30px;color:var(--mut);margin:20px 0 0}
+.foot{position:absolute;left:0;right:0;bottom:96px;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.team-box{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:52px}
+.team{display:flex;align-items:flex-end;gap:20px;font-size:32px;color:var(--mut)}
+.team-l{white-space:nowrap}
+.team.set{align-items:baseline;max-width:1500px}
+.team-v{font-size:40px;font-weight:700;color:#fff;text-align:left}
+.team.set.wide .team-v{font-size:32px;font-weight:600;line-height:1.3}
+.try{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 14px;margin:44px 0 0;font-size:28px;color:var(--mut)}
+.try b,.try a{color:var(--teal2);font-weight:700;text-decoration:none}
+.try a{border-bottom:2px solid rgba(95,209,201,.45)}
+.try a:hover{border-bottom-color:var(--teal2)}
+.try em{font-style:normal;color:var(--dim)}
+/* 2 problem */
+.p-sky{position:relative;margin-top:26px;height:340px}
+.p-svg{width:1660px;height:330px;overflow:visible}
+.p-route{fill:none;stroke:rgba(169,188,207,.35);stroke-width:2;stroke-dasharray:2 12;stroke-linecap:round}
+.p-trail{fill:none;stroke:url(#gS);stroke-width:4;stroke-linecap:round;stroke-dasharray:1 2;stroke-dashoffset:1}
+.p-glow{opacity:.4;filter:blur(20px)}.p-glow.e{fill:#2aa7c9}.p-glow.m{fill:#d6683a}
+.p-dot .halo{fill:rgba(95,209,201,.25)}
+.play .p-dot .halo{animation:beat 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.p-lbl{fill:var(--mut);font-size:26px;font-weight:600;text-anchor:middle;letter-spacing:.08em}
+.p-count{position:absolute;left:50%;top:140px;transform:translateX(-50%);text-align:center;white-space:nowrap}
+.p-count b{font-size:120px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.p-count .x{font-size:40px;color:var(--mut);font-weight:600}
+.p-count small{display:block;font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-top:-4px}
+.p-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:30px}
+.p-f{display:flex;gap:24px;align-items:flex-start;padding:30px 32px}
+.p-f b{display:block;font-size:38px;font-weight:700;margin-bottom:6px}
+.p-f span{display:block;font-size:24px;line-height:1.35;color:var(--mut)}
+/* 3 iss */
+.i-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:44px}
+.i-c{padding:32px;display:flex;flex-direction:column;gap:12px;min-height:410px}
+.i-c h3{margin:8px 0 0;font-size:34px;font-weight:700}
+.i-c p{margin:0;font-size:23px;line-height:1.42;color:var(--mut);flex:1}
+.i-gap{margin-top:36px;padding:22px 40px 28px;border-radius:28px;background:linear-gradient(90deg,rgba(214,104,58,.18),rgba(214,104,58,.04));border:1px solid rgba(214,104,58,.38)}
+.i-tl{width:100%;height:60px;display:block;overflow:visible}.i-tl path{stroke:rgba(169,188,207,.4);stroke-width:2;fill:none}
+.i-dot{fill:var(--mars);transform-box:fill-box;transform-origin:center}
+.play .i-dot{animation:pop .6s var(--back) both;animation-delay:var(--d)}
+.i-gap p{margin:8px 0 0;font-size:40px;font-weight:600;line-height:1.2}
+.i-gap .acc{color:#f3a37a}
+
+/* 4 solution */
+.f-row{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-top:40px}
+.f-line{position:absolute;left:0;top:50px;width:100%;height:20px;overflow:visible}
+.f-line path{stroke:rgba(95,209,201,.45);stroke-width:3;fill:none;stroke-linecap:round}
+.f-run{position:absolute;top:52px;left:207px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--teal2);box-shadow:0 0 18px 5px rgba(95,209,201,.7);z-index:2;opacity:0}
+.play .f-run{animation:run 3.6s var(--ease2) 1.5s infinite both}
+@keyframes run{0%{transform:translateX(0);opacity:0}10%,85%{opacity:1}100%{transform:translateX(1245px);opacity:0}}
+.f-step{text-align:center;position:relative;z-index:1}
+.f-n{position:relative;width:120px;height:120px;border-radius:36px;display:grid;place-items:center;margin:0 auto 20px;background:linear-gradient(150deg,#16505a,#0e2b40);border:1px solid rgba(95,209,201,.5);box-shadow:0 20px 50px -20px rgba(12,135,131,.8)}
+.f-n .ic{width:56px;height:56px}
+.f-n span{position:absolute;top:-12px;right:-12px;width:42px;height:42px;border-radius:50%;background:var(--teal);font-weight:700;font-size:22px;display:grid;place-items:center;box-shadow:0 0 0 4px #0b1626}
+.f-step b{display:block;font-size:36px;font-weight:700}
+.f-step small{display:block;font-size:22px;color:var(--mut);margin-top:6px;line-height:1.35;padding:0 24px}
+.f-bottom{display:grid;grid-template-columns:1fr 500px;gap:28px;margin-top:36px}
+.f-type{padding:28px 32px}
+.f-in{display:flex;align-items:center;gap:16px;font-size:32px;min-height:76px;padding:14px 22px;border-radius:18px;background:rgba(6,11,20,.55);border:1px solid rgba(95,209,201,.3)}
+.hl{background:linear-gradient(var(--teal2),var(--teal2)) 0 100%/0 3px no-repeat;transition:background-size .7s var(--ease)}
+.hl.neg{background-image:linear-gradient(90deg,var(--dim) 50%,transparent 50%);background-size:0 3px;color:var(--mut)}
+.parsed .hl{background-size:100% 3px}.parsed .hl.neg{background-size:12px 3px;background-repeat:repeat-x}
+.f-tags{display:flex;gap:14px;margin-top:20px;flex-wrap:wrap;min-height:50px}
+.tg{font-size:24px;font-weight:600;padding:9px 20px;border-radius:999px;opacity:0;transform:translateY(14px) scale(.9);transition:opacity .5s var(--ease),transform .6s var(--back);transition-delay:calc(var(--k)*150ms)}
+.parsed .tg{opacity:1;transform:none}
+.tg.ok{background:rgba(95,209,201,.15);color:#9ff0e8;border:1px solid rgba(95,209,201,.4)}
+.tg.neg{background:rgba(169,188,207,.06);color:var(--mut);border:1px dashed rgba(169,188,207,.45)}
+.f-side{display:flex;flex-direction:column;gap:14px;justify-content:center}
+.f-b{display:flex;align-items:center;gap:18px;font-size:27px;font-weight:600;padding:16px 24px;border-radius:20px;background:rgba(95,209,201,.08);border:1px solid rgba(95,209,201,.25)}
+/* 5 why */
+.y-grid{display:grid;grid-template-columns:1fr 690px;gap:30px;margin-top:40px}
+.y-ev{padding:34px 40px}
+.y-cap,.ph-cap{font-size:21px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal2);margin-bottom:22px;font-weight:600}
+.y-row{display:grid;grid-template-columns:1fr 90px;grid-template-rows:auto 18px;column-gap:20px;row-gap:12px;margin-bottom:28px}
+.y-l{grid-column:1/3;font-size:27px}
+.y-track{height:18px;border-radius:9px;background:rgba(169,188,207,.12);overflow:hidden;align-self:center}
+.y-track i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#0c8783,#5fd1c9);transform-origin:left}
+.y-w{font-size:32px;font-weight:700;color:var(--teal2);text-align:right;line-height:18px}
+.y-sum{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:16px;font-size:28px;color:var(--mut)}
+.y-sum b{font-size:68px;color:#fff;font-weight:700;font-variant-numeric:tabular-nums}
+.y-dx{padding:34px 40px;border-color:rgba(232,131,58,.5);background:linear-gradient(180deg,rgba(232,131,58,.16),rgba(11,22,38,.62))}
+.y-k{font-size:21px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.y-name{font-size:76px;font-weight:700;line-height:1.05;margin-top:6px}
+.y-sub{font-size:26px;color:var(--mut)}
+.y-lv{display:inline-flex;align-items:center;gap:12px;margin-top:18px;padding:10px 22px;border-radius:999px;background:#e8833a;color:#1a0d05;font-weight:700;font-size:28px}
+.y-lv i{width:12px;height:12px;border-radius:50%;background:#1a0d05;animation:beat 1.2s ease-in-out infinite}
+.y-scale{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:20px}
+.y-scale span{font-size:17px;line-height:1.2;padding-top:10px;border-top:6px solid;color:var(--dim)}
+.y-scale span:nth-child(1){border-color:rgba(47,191,113,.5)}.y-scale span:nth-child(2){border-color:rgba(232,197,71,.5)}.y-scale span:nth-child(3){border-color:#e8833a;color:#fff;font-weight:700}.y-scale span:nth-child(4){border-color:rgba(229,72,77,.5)}
+.y-steps{list-style:none;margin:20px 0 0;padding:0}
+.y-steps li{display:flex;align-items:center;gap:14px;font-size:24px;padding:9px 0;border-bottom:1px dashed rgba(169,188,207,.16)}
+.y-steps li i{position:relative;width:30px;height:30px;border-radius:9px;border:2px solid var(--teal2);flex:none}
+.y-steps li i::after{content:"";position:absolute;left:8px;top:3px;width:8px;height:15px;border:solid var(--teal2);border-width:0 3px 3px 0;transform:rotate(45deg)}
+.play .y-steps li i::after{animation:chk .45s var(--back) both;animation-delay:calc(var(--d,0ms) + 450ms)}
+@keyframes chk{from{opacity:0;transform:rotate(45deg) scale(.2)}to{opacity:1;transform:rotate(45deg)}}
+.y-re{display:flex;align-items:center;gap:12px;margin-top:16px;font-size:22px;color:var(--teal2)}
+/* 6 catalog */
+.c-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:46px}
+.c-n b{display:block;font-size:150px;line-height:1.05;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#fff 30%,#8fe3dc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.c-n.red b{background-image:linear-gradient(180deg,#ffb1b3 20%,#e5484d)}
+.c-n>span{display:block;font-size:28px;color:var(--mut);margin-top:10px;max-width:470px;line-height:1.3}
+.c-mq{margin:52px -130px 0;display:flex;flex-direction:column;gap:16px}
+.mq{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.mq-in{display:flex;width:max-content;animation:mq 40s linear infinite}
+.mq.r .mq-in{animation-direction:reverse;animation-duration:46s}
+.mq-in span{flex:none;margin-right:16px;font-size:28px;padding:12px 26px;border-radius:999px;border:1px solid rgba(95,209,201,.3);background:rgba(95,209,201,.07);color:#d7f5f2}
+.mq.r .mq-in span{border-color:rgba(214,104,58,.35);background:rgba(214,104,58,.08);color:#fbe0d2}
+@keyframes mq{to{transform:translateX(-50%)}}
+.c-abc{margin-top:42px}
+.abc{display:flex;gap:6px}
+.abc i{font-style:normal;font-size:26px;font-weight:600;width:32px;text-align:center;color:var(--dim)}
+.play .abc i{animation:pop .5s var(--back) var(--d) both,lit 6s linear calc(var(--d) + 1.6s) infinite}
+@keyframes lit{0%,5%{color:#fff;text-shadow:0 0 14px var(--teal2)}12%,100%{color:var(--dim);text-shadow:none}}
+.c-abc>span{display:block;font-size:24px;color:var(--mut);margin-top:12px}
+/* 7 card */
+.m-grid{display:grid;grid-template-columns:860px 1fr;gap:30px;margin-top:40px}
+.m-card,.m-db{padding:32px 38px}
+.m-top{display:flex;align-items:center;gap:18px}
+.m-top b{display:block;font-size:34px}.m-top small{font-size:19px;color:var(--teal2);letter-spacing:.14em;text-transform:uppercase}
+.m-av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:rgba(95,209,201,.14);border:1px solid rgba(95,209,201,.35);flex:none}
+.m-av.s{width:54px;height:54px}
+.m-search{display:flex;align-items:center;gap:12px;margin:22px 0 6px;padding:12px 20px;border-radius:16px;background:rgba(6,11,20,.55);border:1px solid rgba(95,209,201,.3);font-size:28px;min-height:62px}
+.m-f{margin:0}
+.m-f>div{display:grid;grid-template-columns:190px 1fr;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+.m-f dt{font-size:20px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+.m-f dd{margin:0;font-size:30px;display:flex;align-items:center;gap:18px}
+.m-sev{display:flex;gap:6px}
+.m-sev i{width:30px;height:22px;border-radius:6px;background:rgba(169,188,207,.15)}
+.m-sev i.on{background:linear-gradient(180deg,#f0a46f,#d6683a)}
+.m-sv{color:#f3a37a}
+.m-f dd.m-note{font-size:25px;color:#d7e3ee}
+.m-dbh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.m-dbh b{font-size:34px}
+.m-add{font-size:22px;font-weight:600;padding:10px 20px;border-radius:999px;background:var(--teal)}
+.m-p{display:flex;align-items:center;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+.m-pi{flex:1}.m-pi b{display:block;font-size:27px}.m-pi small{font-size:20px;color:var(--mut)}
+.m-al{font-size:18px;font-weight:600;padding:6px 14px;border-radius:999px;background:rgba(229,72,77,.15);color:#ff9a9d;border:1px solid rgba(229,72,77,.4);white-space:nowrap}
+.m-ed{opacity:.55}
+.m-cap{margin-top:18px;font-size:22px;color:var(--teal2)}
+
+/* 8 pharmacy */
+.ph-grid{display:grid;grid-template-columns:1fr 640px;gap:30px;margin-top:44px}
+.ph-l,.ph-r{padding:36px 40px}
+.ph-drug{display:flex;gap:18px;align-items:center}.ph-drug b{display:block;font-size:34px}.ph-drug small{font-size:22px;color:var(--mut)}
+.ph-bars{margin-top:32px;display:flex;flex-direction:column;gap:22px}
+.ph-row{display:grid;grid-template-columns:1fr auto;align-items:baseline;column-gap:22px;row-gap:10px;font-size:25px;color:var(--mut)}
+.ph-row b{font-size:30px;color:#fff;text-align:right;white-space:nowrap}
+.ph-row .ph-tr{grid-column:1/3}
+.ph-tr{height:28px;border-radius:10px;background:rgba(169,188,207,.1);overflow:hidden}
+.ph-tr i{display:block;height:100%;border-radius:10px;transform-origin:left}
+.ph-tr.need i{width:100%;background:repeating-linear-gradient(135deg,rgba(169,188,207,.42) 0 10px,rgba(169,188,207,.22) 10px 20px)}
+.ph-tr.left i{width:25%;background:linear-gradient(90deg,#d6683a,#f0a46f)}
+.ph-warn,.ph-sub{display:flex;align-items:center;gap:16px;margin-top:30px;padding:18px 22px;border-radius:18px;font-size:26px}
+.ph-warn{background:rgba(229,72,77,.12);border:1px solid rgba(229,72,77,.45);color:#ffb3b5}
+.ph-warn .ic{stroke:#ff9a9d}
+.ph-sub{margin-top:16px;background:rgba(95,209,201,.08);border:1px solid rgba(95,209,201,.3);color:#c9f1ee}
+.ph-g{width:520px;height:290px;display:block;margin:4px auto 0;overflow:visible}
+.ph-bg,.ph-val{fill:none;stroke-width:30;stroke-linecap:round}
+.ph-bg{stroke:rgba(169,188,207,.14)}
+.ph-val{stroke:url(#gG);stroke-dasharray:1 2;stroke-dashoffset:0}
+.ph-tick{stroke:#fff;stroke-width:4;stroke-linecap:round}
+.ph-ndl path{stroke:#fff;stroke-width:6;stroke-linecap:round}.ph-ndl circle{fill:#fff}
+.ph-v{text-align:center;margin-top:6px}.ph-v b{font-size:96px;font-weight:700;font-variant-numeric:tabular-nums}.ph-v span{font-size:44px;color:var(--mut)}
+.ph-note{text-align:center;font-size:21px;color:var(--mut);line-height:1.5}
+.ph-model{display:inline-block;margin-right:10px;padding:2px 12px;border-radius:999px;border:1px solid rgba(243,178,122,.55);background:rgba(243,178,122,.1);color:#f3b27a;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;vertical-align:2px}
+.ph-c{margin-top:18px;text-align:center;font-size:24px;font-weight:600;color:#f3b27a}
+/* 9 drill */
+.d-grid{display:grid;grid-template-columns:560px 400px 1fr;gap:34px;margin-top:40px;align-items:center}
+.d-alarm{padding:32px 34px;border-color:rgba(229,72,77,.6);transition:border-color .6s}
+.run .d-alarm{animation:alarm 1.2s ease-in-out infinite}
+@keyframes alarm{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}50%{box-shadow:0 0 0 10px rgba(229,72,77,.18),0 0 70px rgba(229,72,77,.4)}}
+.done .d-alarm{border-color:rgba(47,191,113,.6)}
+.d-al{display:flex;align-items:center;gap:14px;font-size:26px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#ff8f92;transition:color .6s}
+.d-al i{width:16px;height:16px;border-radius:50%;background:var(--red)}
+.run .d-al i{animation:blink .8s steps(1) infinite}
+.done .d-al{color:#7be3a8}.done .d-al i{background:var(--green)}
+.d-sc{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.d-sc span{font-size:20px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+.d-sc span.on{border-color:rgba(229,72,77,.6);color:#fff;background:rgba(229,72,77,.15)}
+.d-vit{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+.d-vit div{padding:16px 20px;border-radius:20px;background:rgba(6,11,20,.5);white-space:nowrap}
+.d-vit small{display:block;font-size:20px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+.d-vit b{font-size:68px;font-weight:700;font-variant-numeric:tabular-nums;color:#ff8f92;transition:color .6s}
+.done .d-vit b{color:#7be3a8}
+.d-vit em{font-style:normal;font-size:24px;color:var(--mut);margin-left:6px}
+.d-st{margin-top:18px;font-size:24px;font-weight:600;position:relative;height:34px}
+.d-st span{position:absolute;left:0;top:0;transition:opacity .5s}
+.d-bad{color:#ff8f92}.d-ok{color:#7be3a8;opacity:0}
+.done .d-bad{opacity:0}.done .d-ok{opacity:1}
+.d-mid{position:relative;width:400px;height:400px}
+.d-ring{width:400px;height:400px;overflow:visible}
+.d-rbg,.d-rv{fill:none;stroke-width:22}
+.d-rbg{stroke:rgba(169,188,207,.12)}
+.d-rv{stroke:var(--red);stroke-linecap:round;stroke-dasharray:1 2;stroke-dashoffset:0;transition:stroke .6s;filter:drop-shadow(0 0 12px rgba(229,72,77,.5))}
+.done .d-rv{stroke:var(--green);filter:drop-shadow(0 0 12px rgba(47,191,113,.5))}
+.d-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.d-time b{font-size:110px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.d-time small{font-size:22px;color:var(--mut);text-transform:uppercase;letter-spacing:.14em}
+.d-grade{padding:34px 36px;opacity:0;transform:translateY(30px) scale(.96);transition:opacity .6s var(--ease),transform .8s var(--back);border-color:rgba(47,191,113,.55);background:linear-gradient(180deg,rgba(47,191,113,.16),rgba(11,22,38,.62))}
+.done .d-grade{opacity:1;transform:none}
+.d-gk{font-size:20px;text-transform:uppercase;letter-spacing:.14em;color:var(--mut)}
+.d-g{display:block;font-size:62px;font-weight:700;color:#7be3a8;line-height:1.1;margin-top:6px}
+.d-g span{color:#fff}
+.d-grade ul{list-style:none;padding:0;margin:18px 0 0}
+.d-grade li{display:flex;align-items:center;gap:12px;font-size:23px;padding:8px 0;opacity:0;transform:translateX(20px);transition:opacity .5s,transform .6s var(--ease);transition-delay:calc(300ms + var(--k)*150ms)}
+.done .d-grade li{opacity:1;transform:none}
+.d-grade li i{width:12px;height:12px;border-radius:50%;background:var(--green)}
+.d-scale{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.d-scale span{font-size:17px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+.d-scale .on{border-color:rgba(47,191,113,.6);color:#7be3a8}
+/* 10 guardian */
+.g-grid{display:grid;grid-template-columns:620px 1fr;gap:30px;margin-top:38px}
+.g-left{display:flex;flex-direction:column;gap:20px}
+.g-crew{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g-m{display:flex;align-items:center;gap:14px;padding:22px;position:relative;transition:border-color .5s,background .5s}
+.g-m b{display:block;font-size:24px}.g-m small{font-size:22px;color:var(--mut)}
+.g-s{font-variant-numeric:tabular-nums;color:#fff;font-weight:700}
+.g-st{position:absolute;top:18px;right:18px;width:14px;height:14px;border-radius:50%;background:var(--green);transition:background .4s}
+.g-m.down{border-color:rgba(229,72,77,.6);background:rgba(229,72,77,.1)}
+.g-m.down .g-st{background:var(--red);animation:blink .8s steps(1) infinite}
+.g-m.ok{border-color:rgba(47,191,113,.55)}
+.g-ship{padding:18px 26px}
+.g-ship svg{width:100%;height:200px;overflow:visible;display:block}
+.g-mod{fill:rgba(95,209,201,.06);stroke:rgba(95,209,201,.45);stroke-width:2;transition:fill .5s,stroke .5s}
+.leak .g-mod.a{fill:rgba(229,72,77,.14);stroke:var(--red)}
+.g-ship text{fill:var(--mut);font-size:19px;text-anchor:middle;font-family:var(--font)}
+.g-hatch{stroke:#fff;stroke-width:8;stroke-linecap:round;fill:none;stroke-dasharray:1 2;stroke-dashoffset:1;transition:stroke-dashoffset .7s var(--ease)}
+.hatch .g-hatch{stroke-dashoffset:0}
+.g-leak circle{fill:#ff8f92;opacity:0}
+.leak .g-leak circle{animation:leak 1.6s linear infinite}
+.leak .g-leak circle:nth-child(2){animation-delay:.53s}.leak .g-leak circle:nth-child(3){animation-delay:1.06s}
+@keyframes leak{0%{opacity:.9;transform:translateX(0)}100%{opacity:0;transform:translateX(-70px)}}
+.g-o2 circle{fill:var(--teal2);opacity:0}
+.o2 .g-o2 circle{animation:o2 2.4s ease-in-out infinite}
+.o2 .g-o2 circle:nth-child(2){animation-delay:.4s}.o2 .g-o2 circle:nth-child(3){animation-delay:.8s}.o2 .g-o2 circle:nth-child(4){animation-delay:1.2s}.o2 .g-o2 circle:nth-child(5){animation-delay:1.6s}
+@keyframes o2{0%{opacity:0;transform:translateY(16px)}30%,70%{opacity:.9}100%{opacity:0;transform:translateY(-16px)}}
+html.rm .o2 .g-o2 circle{opacity:.8}
+.g-log{padding:30px 36px}
+.g-h{display:flex;align-items:center;gap:14px}.g-h b{font-size:30px}
+.g-mode{margin-left:auto;font-size:18px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--mut);transition:background .5s,color .5s,border-color .5s}
+.auto .g-mode{background:var(--teal);border-color:var(--teal);color:#fff}
+.g-log ol{list-style:none;margin:18px 0 0;padding:0}
+.g-log li{display:flex;align-items:center;gap:16px;font-size:26px;padding:12px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateX(30px);transition:opacity .5s var(--ease),transform .7s var(--ease)}
+.g-log li.on{opacity:1;transform:none}
+.g-log li::before{content:"";width:12px;height:12px;border-radius:50%;flex:none;background:currentColor}
+.g-log li.r{color:#ff9a9d}.g-log li.o{color:#f3b27a}.g-log li.t{color:#9ff0e8}.g-log li.g{color:#7be3a8}
+/* 11 science */
+.sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:40px}
+.sc-t{padding:30px 34px 28px;position:relative;overflow:hidden;min-height:296px;display:flex;flex-direction:column}
+.sc-ln{position:absolute;left:0;top:0;width:100%;height:4px}
+.sc-ln path{stroke:var(--teal2);stroke-width:8;fill:none}
+.sc-v{font-size:84px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sc-v small{font-size:36px;color:var(--teal2);font-weight:600;letter-spacing:0}
+.sc-t p{font-size:23px;line-height:1.4;color:var(--mut);margin:16px 0 0;flex:1}
+/* 12 next */
+.n-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:44px}
+.n-c{padding:36px;display:flex;flex-direction:column;min-height:470px}
+.n-c h3{font-size:36px;margin:26px 0 10px}
+.n-c p{font-size:24px;line-height:1.42;color:var(--mut);margin:0;flex:1}
+.n-viz{height:80px;margin-top:20px;display:flex;align-items:center}
+.n-viz svg{width:100%;height:80px;overflow:visible}
+.n-ecg{fill:none;stroke:var(--teal2);stroke-width:3;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1 2}
+.play .n-ecg{animation:ecg 2.4s linear infinite}
+@keyframes ecg{0%{stroke-dashoffset:1}60%{stroke-dashoffset:0}100%{stroke-dashoffset:-1}}
+.n-wave{fill:none;stroke:#f3a37a;stroke-width:3;stroke-linecap:round;stroke-dasharray:8 10}
+.play .n-wave{animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-36}}
+.n-bub{display:flex;gap:10px;align-items:center;padding:18px 24px;border-radius:24px 24px 24px 6px;background:rgba(95,209,201,.12);border:1px solid rgba(95,209,201,.3)}
+.n-bub span{width:14px;height:14px;border-radius:50%;background:var(--teal2);opacity:.3}
+.play .n-bub span{animation:dots 1.4s ease-in-out infinite}
+.play .n-bub span:nth-child(2){animation-delay:.2s}.play .n-bub span:nth-child(3){animation-delay:.4s}
+@keyframes dots{0%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-8px)}}
+.n-foot{display:flex;align-items:center;gap:18px;margin-top:40px;font-size:40px;font-weight:600}
+
+/* first-slide navigation hint: fades in after the title animation */
+.play .fade{animation:fade 1.1s ease both;animation-delay:var(--d,0ms)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.hint{position:absolute;left:50%;bottom:38px;transform:translateX(-50%);white-space:nowrap;text-align:center;font-size:20px;letter-spacing:.04em;color:#93a7bb;pointer-events:none}
+/* lead: one line where it fits, balanced lines otherwise */
+.lead{max-width:1660px;text-wrap:balance}
+/* last slide: team / members as an aligned two-column block */
+.team-box{display:grid;grid-template-columns:auto auto;justify-content:center;align-items:end;column-gap:20px;row-gap:14px}
+.team-box .team{display:contents}
+.team-box .team-l{text-align:right}
+.team-box .team.set>*{align-self:baseline}
+.team-box .team-v{text-align:left;max-width:1100px}
+.hint kbd{display:inline-block;min-width:34px;margin-right:4px;padding:3px 9px;border-radius:8px;border:1px solid rgba(169,188,207,.38);border-bottom-width:3px;background:rgba(6,11,20,.5);font:700 18px/1.2 var(--font);color:#dbe7f1;text-align:center}
+.hint>span{white-space:nowrap}
+/* ISS slide: the gap line wraps into even lines and the band keeps clear of the footer */
+.i-c{min-height:380px}
+.i-gap{margin-top:30px}
+.i-gap p{text-wrap:pretty}
+html[lang="en"] .i-gap p{font-size:36px}
+.m-cap{text-wrap:balance}
+/* catalog counters never wrap */
+.c-n b{white-space:nowrap}
+/* ---------- submission deck ---------- */
+/* 1 title: name, challenge, team */
+.t7 .lw{width:150px;height:150px;margin-bottom:30px}
+.t7 .lw .ring{border-radius:42px}
+.t7 .logo.big{width:150px;height:150px;border-radius:42px}
+.t7 .h1{font-size:150px}
+.t7 .t-tag{font-size:52px;margin-top:22px}
+.t7 .sub{font-size:28px;margin-top:14px}
+.t7-meta{position:relative;display:grid;grid-template-columns:auto minmax(0,auto);justify-content:center;align-items:baseline;column-gap:26px;row-gap:12px;margin-top:40px;padding:22px 44px 26px;border-radius:26px;background:linear-gradient(180deg,rgba(12,26,42,.94),rgba(7,14,25,.94));border:1px solid var(--line);box-shadow:0 30px 80px -30px rgba(0,0,0,.7);text-align:left;max-width:1500px}
+.t7-ev{grid-column:1/3;text-align:center;font-size:18px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--teal2);margin-bottom:4px}
+.t7-row,.t7-meta .team{display:contents}
+.t7-k,.t7-meta .team-l{font-size:18px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);text-align:right;white-space:nowrap}
+.t7-row b{font-size:30px;font-weight:700;color:#fff}
+.t7-meta .team-v,.t7-meta .team.set.wide .team-v{font-size:30px;font-weight:700;line-height:1.3}
+/* 5 safety net: training alarm + crew guardian */
+.sf-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:40px;align-items:stretch}
+.sf-d{padding:30px 34px}
+.sf-p{margin:12px 0 0;font-size:24px;color:var(--mut)}
+.sf-d .d-sc{margin-top:16px}
+.sf-dm{display:flex;align-items:center;gap:34px;margin-top:22px}
+.sf-ring{position:relative;width:236px;height:236px;flex:none}
+.sf-ring .d-ring{width:236px;height:236px}
+.sf-ring .d-rbg,.sf-ring .d-rv{stroke-width:26}
+.sf-ring .d-time b{font-size:68px}
+.sf-ring .d-time small{font-size:17px}
+.sf-vit{flex:1;grid-template-columns:1fr;gap:14px;margin-top:0}
+.sf-vit div{padding:12px 20px}
+.sf-vit b{font-size:56px}
+.sf-st{margin-top:22px;font-size:25px}
+.sf-g{padding:30px 34px}
+.sf-crew{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.sf-crew .g-m{flex-direction:column;align-items:flex-start;justify-content:space-between;gap:6px;padding:16px 16px 14px;border-radius:20px}
+.sf-crew .g-m b{font-size:19px;line-height:1.2;padding-right:14px}
+.sf-crew .g-m small{font-size:20px}
+.sf-crew .g-st{top:14px;right:12px;width:12px;height:12px}
+.sf-g ol{margin-top:14px}
+.sf-g li{font-size:24px;padding:10px 0}
+/* 6 science & data */
+.dt-lbl{display:flex;align-items:center;gap:18px;margin-top:34px;font-size:19px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--teal2)}
+.dt-lbl i{flex:1;height:1px;background:linear-gradient(90deg,rgba(95,209,201,.45),transparent)}
+.dt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:16px}
+.dt-t{position:relative;overflow:hidden;padding:26px 28px 24px;display:flex;flex-direction:column}
+.dt-v{font-size:66px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dt-v small{font-size:28px;color:var(--teal2);font-weight:600;letter-spacing:0}
+.dt-t p{margin:14px 0 0;font-size:22px;line-height:1.35;color:var(--mut);flex:1;text-wrap:pretty}
+.dt-use span{text-wrap:balance}
+.dt-t .src{margin-top:12px;font-size:16px}
+.dt-use{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:21px;line-height:1.3;color:#c9f1ee}
+.dt-use .ic{width:30px;height:30px}
+.dt-p{display:grid;grid-template-columns:auto 1fr 470px;align-items:center;gap:28px;margin-top:16px;padding:24px 32px}
+.dt-pi b{display:block;font-size:30px}
+.dt-pi p{margin:6px 0 0;font-size:22px;line-height:1.35;color:var(--mut)}
+.dt-pi .src{margin-top:8px;font-size:16px}
+.dt-p .dt-use{margin:0;padding:0 0 0 28px;border-top:0;border-left:1px solid var(--line);align-self:stretch}
+.dt-note{margin:20px 0 0;font-size:20px;color:var(--dim)}
+/* 7 what's next + try it */
+.nx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:40px}
+.nx-c{padding:28px 30px 22px;display:flex;flex-direction:column}
+.nx-h{display:flex;align-items:center;gap:18px}
+.nx-h h3{margin:0;font-size:31px;line-height:1.15}
+.nx-c p{margin:16px 0 0;font-size:24px;line-height:1.4;color:var(--mut);flex:1;text-wrap:balance}
+.nx-c .n-viz{height:64px;margin-top:12px}
+.nx-c .n-viz svg{height:64px}
+.nx-earth{display:flex;align-items:center;gap:16px;margin-top:34px;font-size:32px;font-weight:600}
+.nx-earth .ic{width:42px;height:42px}
+.nx-try{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:26px;margin-top:30px;padding:24px 34px;border-color:rgba(95,209,201,.45);background:linear-gradient(90deg,rgba(12,135,131,.22),rgba(11,22,38,.62))}
+.nx-tl small{display:block;font-size:19px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal2)}
+.nx-link{margin-top:4px;padding-bottom:6px;font-size:40px;line-height:1.3;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nx-link a,.nx-link b{color:#fff;text-decoration:none}
+.nx-link a{border-bottom:3px solid rgba(95,209,201,.55)}
+.nx-link a:hover{border-bottom-color:var(--teal2)}
+.nx-file{font-size:22px;color:var(--mut);text-align:right;max-width:660px;line-height:1.35}
+.nx-file span{white-space:nowrap}
+.nx-foot{margin-top:38px}
+/* full deck, slide 12: the same "on Earth too" line */
+.n-c{min-height:430px}
+.n-foot+.n-earth{margin-top:24px;font-size:30px;font-weight:500;color:var(--mut)}
+.n-foot+.n-earth .ic{width:38px;height:38px;margin-left:2px}
+
+/* ---------- shared components added in round 2 (all decks) ---------- */
+/* a hint that fades in and then out again (defense title: it must not sit on screen during the intro) */
+.fade-io{opacity:0}
+.play .fade-io{animation:fadeio 9s ease both;animation-delay:var(--d,0ms)}
+@keyframes fadeio{0%{opacity:0}12%{opacity:1}82%{opacity:1}100%{opacity:0}}
+/* daily check-in: sleep, mood, blood sugar with 7-day trends, color coding and a daily reminder */
+.ci{padding:22px 30px}
+.ci-h{display:flex;align-items:center;gap:16px}
+.ci-ht b{display:block;font-size:28px;line-height:1.15}
+.ci-ht small{display:block;font-size:18px;color:var(--teal2);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;white-space:nowrap}
+.ci-rem{display:inline-flex;align-items:center;gap:8px;font-size:19px;font-weight:600;color:#c9f1ee;padding:6px 16px 6px 10px;border-radius:999px;border:1px solid rgba(95,209,201,.35);background:rgba(95,209,201,.08);white-space:nowrap}
+.ci-rem .ic{width:26px;height:26px}
+.ci-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ci-l{font-size:18px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);white-space:nowrap}
+.ci-st{display:inline-flex;align-items:center;gap:7px;font-size:18px;font-weight:600;white-space:nowrap}
+.ci-st i{width:10px;height:10px;border-radius:50%;background:currentColor}
+.ci-m.ok .ci-st{color:#7be3a8}.ci-m.caut .ci-st{color:#f3b27a}
+.ci-v{white-space:nowrap}
+.ci-v b{font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ci-v small{font-size:21px;color:var(--mut);margin-left:6px}
+.ci-sp{display:block;width:240px;height:auto;aspect-ratio:240/64;overflow:visible}
+.ci-band{fill:rgba(47,191,113,.1);stroke:rgba(47,191,113,.28);stroke-width:1;stroke-dasharray:4 4}
+.ci-ln{fill:none;stroke:var(--teal2);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ci-sp.caut .ci-ln{stroke:#f3b27a}
+.ci-pt{fill:#0b1626;stroke:rgba(169,188,207,.75);stroke-width:2;transform-box:fill-box;transform-origin:center}
+.ci-dot{transform-box:fill-box;transform-origin:center;stroke:#0b1626;stroke-width:3}
+.ci-dot.ok{fill:#2fbf71}.ci-dot.caut{fill:#e8a23a}
+/* row: a full-width strip (full deck, medical card slide) */
+.ci-row{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:34px;margin-top:22px;padding:20px 30px}
+.ci-row .ico{width:62px;height:62px;border-radius:18px}
+.ci-row .ico .ic{width:38px;height:38px}
+.ci-row .ci-h{display:grid;grid-template-columns:auto auto;column-gap:16px;row-gap:12px;justify-items:start}
+.ci-row .ci-rem{grid-column:1/3}
+.ci-row .ci-ms{display:grid;grid-template-columns:repeat(3,1fr)}
+.ci-row .ci-m{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto auto;align-items:center;column-gap:18px;row-gap:2px;padding:0 0 0 30px;border-left:1px solid var(--line)}
+.ci-row .ci-top{display:contents}
+.ci-row .ci-l{grid-column:1;grid-row:1}
+.ci-row .ci-v{grid-column:1;grid-row:2}
+.ci-row .ci-st{grid-column:1;grid-row:3}
+.ci-row .ci-sp{grid-column:2;grid-row:1/4;width:100%;max-width:230px;justify-self:end}
+.ci-row .ci-v b{font-size:40px}
+/* stack: a narrow column, one metric per row (submission deck, solution slide) */
+.ci-stack{display:flex;flex-direction:column;gap:12px;padding:22px 28px}
+.ci-stack .ci-h{flex-wrap:wrap;row-gap:10px}
+.ci-stack .ci-rem{margin-left:auto}
+.ci-stack .ci-ms{display:flex;flex-direction:column}
+.ci-stack .ci-m{display:grid;grid-template-columns:170px 136px 1fr;align-items:center;column-gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+.ci-stack .ci-top{flex-direction:column;align-items:flex-start;gap:3px}
+.ci-stack .ci-v b{font-size:34px}
+.ci-stack .ci-v small{font-size:19px}
+.ci-stack .ci-sp{width:100%;max-width:190px;justify-self:end}
+.f-bottom.f-wide{grid-template-columns:1fr 640px;align-items:start}
+.f-left{display:flex;flex-direction:column;gap:18px}
+.f-badges{flex-direction:row;gap:14px}
+.f-badges .f-b{flex:1;font-size:22px;gap:12px;padding:14px 18px;white-space:nowrap}
+/* NASA HRP hazard → features rows */
+.hz{display:flex;flex-direction:column;gap:12px;margin-top:34px}
+.hz-r{display:grid;grid-template-columns:56px 400px 44px 1fr;align-items:center;column-gap:18px;padding:14px 26px;border-radius:24px;background:linear-gradient(90deg,rgba(23,53,82,.6),rgba(11,22,38,.45));border:1px solid var(--line)}
+.hz-i{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:rgba(12,135,131,.16);border:1px solid rgba(95,209,201,.3)}
+.hz-i .ic{width:32px;height:32px}
+.hz-k{display:flex;flex-direction:column;gap:5px}
+.hz-n{font-size:28px;font-weight:700;line-height:1.15}
+.hz-ar{width:44px;height:16px;overflow:visible}
+.hz-ar path{fill:none;stroke:var(--teal2);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.hz-f{display:flex;flex-wrap:wrap;gap:10px}
+.hz-f span{font-size:23px;line-height:1.2;padding:7px 16px;border-radius:999px;background:rgba(95,209,201,.08);border:1px solid rgba(95,209,201,.3);color:#d7f5f2;white-space:nowrap}
+.hz-e{font-style:normal;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);line-height:1.3}
+.hz.hz-src .hz-r{grid-template-columns:56px 380px 44px 1fr}
+.hz.hz-src .hz-f span{font-size:22px}
+.hz-cite{margin:22px 0 0;font-size:19px;line-height:1.4;color:var(--dim)}
+/* submission deck, data slide: compact rows and five data tiles */
+.m-submission .hz{gap:7px;margin-top:12px}
+.m-submission .hz.hz-src .hz-r{grid-template-columns:44px 330px 34px 1fr;column-gap:14px;padding:6px 20px;border-radius:18px}
+.m-submission .hz-k{gap:2px}
+.m-submission .hz-i{width:42px;height:42px;border-radius:12px}
+.m-submission .hz-i .ic{width:26px;height:26px}
+.m-submission .hz-n{font-size:22px}
+.m-submission .hz-ar{width:34px}
+.m-submission .hz-f{gap:6px}
+.m-submission .hz.hz-src .hz-f span{font-size:18px;padding:4px 12px}
+.m-submission .hz-e{font-size:13px}
+.m-submission .dt-lbl{margin-top:24px}
+.dt5{grid-template-columns:repeat(5,1fr);gap:18px;margin-top:14px}
+.dt5 .dt-t{padding:18px 20px 16px}
+.dt5 .dt-v{font-size:46px}
+.dt5 .dt-v small{font-size:21px}
+.dt5 .dt-t p{margin-top:10px;font-size:18px;line-height:1.3}
+.dt5 .dt-t .src{margin-top:8px;font-size:14px}
+.dt5 .dt-use{margin-top:12px;padding-top:10px;font-size:17px;gap:10px}
+.dt5 .dt-use .ic{width:24px;height:24px}
+.m-submission .dt-note{margin-top:14px;font-size:16px;line-height:1.4}
+/* full deck, medical card slide: tighter cards so the check-in strip fits above the footer */
+.s-card .m-grid{margin-top:30px}
+.s-card .m-card,.s-card .m-db{padding:26px 34px}
+.s-card .m-search{margin:18px 0 4px}
+.s-card .m-f>div{padding:10px 0}
+.s-card .m-p{padding:9px 0}
+.s-card .m-cap{margin-top:12px}
+
+</style>
+</head>
+<body>
+<div id="stage">
+<canvas id="sky" aria-hidden="true"></canvas>
+<main id="deck"></main>
+<div id="sweep" aria-hidden="true"></div>
+<div id="brand"><i class="logo"></i><span id="bname">Asklepios</span></div>
+<div id="meta"><span id="num" aria-hidden="true"></span></div>
+<div id="track"><div id="bar"></div></div>
+</div>
+<script>
+const LOCAL_BUILD = true;
+/* Team, shown on the last slide of the full deck and on the title of the submission and defense decks.
+   Members are written in the slide's language. Backtick strings, so a name with an apostrophe is safe. */
+const TEAM_INFO = { name: `vod0laz1`, members: { uk: `Максим, Матвій, Дмитро, Станіслав, Денис`, en: `Maksym, Matvii, Dmytro, Stanislav, Denys` } };
+/* Public link to the app: replace the placeholder by plain search-and-replace. Until then the slides say index.html. */
+const LINK_INFO = { project: `{{PROJECT_LINK}}` };
+
+/* Slides 1-7: text in both languages + HTML builder + optional JS timeline.
+   mood = background glow [x, y, radius, alpha, color key]. *word* = accent, \n = line break. */
+function mq(a) { const s = a.map(p => `<span>${esc(p)}</span>`).join(''); return s + s; }
+
+/* Earth → Mars with the one-way signal delay; play() of the problem slide animates it (.p-dot, .p-trail, .p-n) */
+function pSky(t, d0) {
+  return `<div class="p-sky up" ${D(d0)}>
+<svg class="p-svg" viewBox="0 0 1660 330" aria-hidden="true"><defs>
+<radialGradient id="gE" cx="38%" cy="35%" r="70%"><stop offset="0" stop-color="#8ff0e6"/><stop offset=".5" stop-color="#1b6f9a"/><stop offset="1" stop-color="#0b2a4a"/></radialGradient>
+<radialGradient id="gM" cx="38%" cy="35%" r="70%"><stop offset="0" stop-color="#f6a676"/><stop offset=".55" stop-color="#d6683a"/><stop offset="1" stop-color="#6e2a12"/></radialGradient>
+<linearGradient id="gS" x1="0" x2="1"><stop offset="0" stop-color="#5fd1c9"/><stop offset="1" stop-color="#d6683a"/></linearGradient></defs>
+<path class="p-route" d="M250 190Q830 10 1430 190"/>
+<path class="p-trail" pathLength="1" d="M250 190Q830 10 1430 190"/>
+<circle class="p-glow e" cx="150" cy="200" r="110"/><circle cx="150" cy="200" r="78" fill="url(#gE)"/>
+<circle class="p-glow m" cx="1510" cy="200" r="88"/><circle cx="1510" cy="200" r="58" fill="url(#gM)"/>
+<g class="p-dot" transform="translate(250 190)"><circle class="halo" r="26"/><circle r="9" fill="#fff"/></g>
+<text class="p-lbl" x="150" y="322">${esc(t.e)}</text><text class="p-lbl" x="1510" y="322">${esc(t.m)}</text></svg>
+<div class="p-count"><span class="x">${esc(t.x)}</span> <b class="p-n">22</b> <span class="x">${esc(t.u)}</span><small>${esc(t.sig)}</small></div></div>`;
+}
+
+/* Daily check-in: sleep, mood and blood sugar with 7-day trends, color coding and a daily reminder.
+   m = [label, value, unit, last 7 days, status ok|caut, status text, scale]. The values follow the app's example data
+   for the Pilot (Illia): sleep and mood slide over the last days; blood sugar in mg/dL, mood of 5, as in the app. */
+/* each trend is drawn on a fixed scale [lo, hi] with a faint band for the usual range [from, to]
+   (the app's caution limits: sleep under 6 h, mood 2 or lower, blood sugar outside 70–180 mg/dL) */
+const CI_SCALE = { sleep: [4, 8.5, 6, 8.5], mood: [1, 5, 3, 5], sugar: [40, 220, 70, 180] };
+const CHECKIN = {
+  uk: { t: 'Щоденна перевірка', who: 'Пілот · тренд за 7 днів', rem: 'Нагадування щодня',
+    m: [['Сон', '5', 'год', [7, 7, 6.5, 6, 5.5, 5, 5], 'caut', 'мало сну', CI_SCALE.sleep],
+      ['Настрій', '2', 'з 5', [4, 4, 3, 3, 2, 2, 2], 'caut', 'низький настрій', CI_SCALE.mood],
+      ['Цукор крові', '98', 'мг/дл', [96, 99, 94, 102, 97, 100, 98], 'ok', 'у нормі', CI_SCALE.sugar]] },
+  en: { t: 'Daily check-in', who: 'Pilot · 7-day trend', rem: 'Daily reminder',
+    m: [['Sleep', '5', 'h', [7, 7, 6.5, 6, 5.5, 5, 5], 'caut', 'short sleep', CI_SCALE.sleep],
+      ['Mood', '2', 'of 5', [4, 4, 3, 3, 2, 2, 2], 'caut', 'low mood', CI_SCALE.mood],
+      ['Blood sugar', '98', 'mg/dL', [96, 99, 94, 102, 97, 100, 98], 'ok', 'normal', CI_SCALE.sugar]] }
+};
+/* a 7-point sparkline that draws itself over its usual-range band; the last point is a dot in the status color */
+function ciSpark(vals, st, d0, sc) {
+  const w = 240, h = 64, px = 10, py = 8, s = sc || [Math.min(...vals), Math.max(...vals)], span = (s[1] - s[0]) || 1;
+  const Y = v => h - py - (Math.min(s[1], Math.max(s[0], v)) - s[0]) / span * (h - 2 * py);
+  const pts = vals.map((v, k) => [px + k * (w - 2 * px) / (vals.length - 1), Y(v)]);
+  const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L');
+  const last = pts[pts.length - 1];
+  const band = s.length > 2 ? `<rect class="ci-band" x="0" y="${Y(s[3]).toFixed(1)}" width="${w}" height="${(Y(s[2]) - Y(s[3])).toFixed(1)}" rx="6"/>` : '';
+  return `<svg class="ci-sp ${st}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${band}<path class="ci-ln draw" pathLength="1" ${D(d0)} d="${d}"/>` +
+    pts.slice(0, -1).map((p, k) => `<circle class="ci-pt pop" ${D(d0 + 120 + k * 90)} cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4"/>`).join('') +
+    `<circle class="ci-dot ${st} pop" ${D(d0 + 800)} cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="8"/></svg>`;
+}
+/* the check-in card: v = 'row' (full-width strip) or 'stack' (narrow column, metrics as rows) */
+function checkin(c, d0, v) {
+  return `<div class="card ci ci-${v} up" ${D(d0)}><div class="ci-h"><div class="ico">${ico('cal')}</div><div class="ci-ht"><b>${esc(c.t)}</b><small>${esc(c.who)}</small></div>` +
+    `<span class="ci-rem">${ico('bell', 'sm')}<span>${esc(c.rem)}</span></span></div>` +
+    `<div class="ci-ms">${c.m.map((m, k) => `<div class="ci-m ${m[4]}"><div class="ci-top"><span class="ci-l">${esc(m[0])}</span><span class="ci-st"><i></i>${esc(m[5])}</span></div>` +
+      `<div class="ci-v"><b>${esc(m[1])}</b><small>${esc(m[2])}</small></div>${ciSpark(m[3], m[4], d0 + 350 + k * 160, m[6])}</div>`).join('')}</div></div>`;
+}
+
+/* the three badges of the solution slide: offline, one file, two languages */
+function badges(t, cls) { return `<div class="f-side${cls ? ' ' + cls : ''}">${t.b.map((b, k) => `<div class="f-b up" ${D(1350 + k * 130)}>${ico(['sigoff', 'file', 'globe'][k], 'sm')}<span>${esc(b)}</span></div>`).join('')}</div>`; }
+/* the solution slide body; side = the right-hand column next to the complaint box, under = more under the complaint box */
+function solHtml(t, i, side, wide, under) {
+  return `${hd(t, i)}
+<div class="f-row"><svg class="f-line" viewBox="0 0 1660 20" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="1" ${D(700)} d="M207 10H1452"/></svg><i class="f-run"></i>
+${t.s.map((s, k) => `<div class="f-step pop" ${D(450 + k * 180)}><div class="f-n">${ico(['user', 'chat', 'quest', 'check'][k])}<span>${k + 1}</span></div><b>${esc(s[0])}</b><small>${esc(s[1])}</small></div>`).join('')}</div>
+<div class="f-bottom${wide ? ' f-wide' : ''}">${under ? '<div class="f-left">' : ''}<div class="card f-type up" ${D(1150)}><div class="f-in">${ico('chat', 'sm')}<span class="f-txt"></span><i class="caret"></i></div>
+<div class="f-tags">${t.tags.map((g, k) => `<span class="tg ${g[1]}" style="--k:${k}">${esc(g[0])}</span>`).join('')}</div></div>
+${under ? under + '</div>' : ''}${side}</div>`;
+}
+
+const SLIDES = [
+{
+  id: 'title', edge: true, mood: [1480, 920, 860, .32, 'm'],
+  uk: { name: 'Асклепій', tag: 'Лікар, який *завжди на борту*', sub: 'Офлайн ШІ-медик для екіпажу, що летить на Марс', foot: 'NASA Space Apps Challenge 2026 · ПЗ для моніторингу здоров’я астронавтів у космічних місіях' },
+  en: { name: 'Asklepios', tag: 'The doctor who is *always on board*', sub: 'An offline AI medic for a crew on its way to Mars', foot: 'NASA Space Apps Challenge 2026 · Create Health Monitoring Software for Astronauts on Space Missions' },
+  html: t => `<div class="ctr">
+<div class="orbit"><svg viewBox="0 0 1600 700" aria-hidden="true"><path class="draw" ${D(200)} pathLength="1" d="M100 350a700 250 0 1 0 1400 0a700 250 0 1 0 -1400 0"/></svg><i class="odot"></i></div>
+<div class="lw pop" ${D(120)}><i class="ring"></i><i class="ring r2"></i><i class="logo big"></i></div>
+<h1 class="h1" aria-label="${esc(t.name)}">${kc(t.name, 380, 55)}</h1>
+<p class="t-tag">${kt(t.tag, 900, 70)}</p>
+<p class="sub up" ${D(1350)}>${esc(t.sub)}</p>
+<div class="foot up" ${D(1600)}>${esc(t.foot)}</div>
+<div class="hint fade" ${D(2700)}>${hint()}</div></div>`
+},
+{
+  id: 'problem', mood: [1640, 420, 640, .3, 'm'],
+  uk: { k: 'Проблема', h: 'До Марса *далеко*.\nДопомога не прийде.', x: 'до', u: 'хв', sig: 'сигнал в один бік · 3–22 хв · NASA', e: 'Земля', m: 'Марс',
+    f: [['~13 днів', 'без зв’язку, коли Сонце між Землею і Марсом', 'NASA'], ['Лікаря немає', 'на борту лише медофіцер екіпажу', ''], ['Евакуації немає', 'і аптечку не поповнити до кінця місії', '']] },
+  en: { k: 'The problem', h: 'Mars is *far away*.\nHelp isn’t coming.', x: 'up to', u: 'min', sig: 'one-way signal · 3–22 min · NASA', e: 'Earth', m: 'Mars',
+    f: [['~13 days', 'of blackout when the Sun is between Earth and Mars', 'NASA'], ['No doctor', 'on board — only a crew medical officer', ''], ['No evacuation', 'and no resupply until the mission ends', '']] },
+  html: (t, L, i) => `${hd(t, i)}
+${pSky(t, 250)}
+<div class="p-facts">${t.f.map((f, k) => `<div class="card p-f up" ${D(800 + k * 150)}>${icb(['sigoff', 'nodoc', 'xcirc'][k])}<div><b>${esc(f[0])}</b><span>${esc(f[1])}</span>${f[2] ? `<em class="src">${esc(f[2])}</em>` : ''}</div></div>`).join('')}</div>`,
+  play(el) {
+    const dot = el.querySelector('.p-dot'), tr = el.querySelector('.p-trail'), n = el.querySelector('.p-n');
+    const set = (p, a) => {
+      const q = 1 - p, x = q * q * 250 + 2 * q * p * 830 + p * p * 1430, y = q * q * 190 + 2 * q * p * 10 + p * p * 190;
+      dot.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      tr.style.strokeDashoffset = (1 - p).toFixed(4);
+      n.textContent = Math.round(p * 22);
+      dot.style.opacity = tr.style.opacity = a;
+    };
+    if (RM) { set(1, 1); return; }
+    set(0, 1);
+    tick(ms => {
+      const c = ms - 800; if (c < 0) return;
+      const k = c % 4400;
+      set(k < 3000 ? easeIO(k / 3000) : 1, k > 3800 ? Math.max(0, 1 - (k - 3800) / 600) : 1);
+    });
+  }
+},
+{
+  id: 'iss', mood: [260, 960, 820, .2, 'm'],
+  uk: { k: 'МКС сьогодні', h: 'Як це роблять на МКС *сьогодні*',
+    c: [['Періодичні огляди', 'Показники не передаються безперервно: окремі медичні прилади застосовують час від часу.', 'NASA Glenn'],
+      ['Astroskin', 'Сорочка Bio-Monitor, на МКС з грудня 2018: ЕКГ у 3 відведеннях, 2 датчики дихання, температура шкіри, пов’язка з PPG (пульс, SpO₂), ~48 год батареї.', 'CSA'],
+      ['Double Sensor', 'Датчик температури ядра тіла (Charité / Dräger): ним виміряли «космічну лихоманку».', 'Stahn et al., 2017'],
+      ['Дозиметри', 'Crew Active Dosimeter передає показники дози через Bluetooth на ноутбуки станції.', 'NASA SRAG']],
+    gap: 'Прогалина: стежать сеансами, а не *постійно* — і ніщо не *ухвалює рішень* на борту.' },
+  en: { k: 'The ISS today', h: 'How it’s done on the ISS *today*',
+    c: [['Periodic checks', 'Vital signs are not streamed continuously: discrete medical devices are used from time to time.', 'NASA Glenn'],
+      ['Astroskin', 'Bio-Monitor smart shirt, on the ISS since Dec 2018: 3-lead ECG, 2 breathing sensors, skin temperature, headband PPG (pulse, SpO₂), ~48 h battery.', 'CSA'],
+      ['Double Sensor', 'Core body temperature sensor (Charité / Dräger): used to measure “space fever”.', 'Stahn et al., 2017'],
+      ['Dosimeters', 'The Crew Active Dosimeter sends dose readings over Bluetooth to station laptops.', 'NASA SRAG']],
+    gap: 'The gap: monitoring runs in sessions, not *around the clock* — and nothing *decides* on board.' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="i-grid">${t.c.map((c, k) => `<div class="card i-c up" ${D(300 + k * 130)}>${icb(['clock', 'pulse', 'thermo', 'bt'][k])}<h3>${esc(c[0])}</h3><p>${esc(c[1])}</p><em class="src">${esc(c[2])}</em></div>`).join('')}</div>
+<div class="i-gap up" ${D(950)}><svg class="i-tl" viewBox="0 0 1580 60" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="1" ${D(1050)} d="M0 30H1580"/>${[80, 400, 760, 1110, 1480].map((x, k) => `<circle class="i-dot" cx="${x}" cy="30" r="11" ${D(1250 + k * 130)}/>`).join('')}</svg><p>${kt(t.gap, 1400, 45)}</p></div>`
+},
+{
+  id: 'solution', mood: [1620, 900, 900, .24, 'm'],
+  uk: { k: 'Рішення', h: 'Огляд за *4 кроки* — навіть без зв’язку',
+    lead: 'Моніторинг стежить за пульсом, SpO₂ і температурою кожного, показує особисту норму й вмикає тривогу.',
+    s: [['Пацієнт', 'хто, особиста норма, алергії'], ['Скарги', 'звичайними словами'], ['Питання', '12 протоколів + загальний алгоритм'], ['Рішення', 'терміновість, кроки, перевірка']],
+    say: ['голова паморочиться', 'важко дихати', 'нудоти немає'],
+    tags: [['запаморочення ✓', 'ok'], ['задишка ✓', 'ok'], ['нудота — заперечення', 'neg']],
+    b: ['Без інтернету', 'Один HTML-файл', 'Українська / English'] },
+  en: { k: 'Our solution', h: 'An exam in *4 steps* — even with no signal',
+    lead: 'Monitoring tracks each person’s pulse, SpO₂ and temperature, shows their own baseline and raises the alarm.',
+    s: [['Patient', 'who, personal baseline, allergies'], ['Complaints', 'in plain words'], ['Questions', '12 protocols + a general algorithm'], ['Decision', 'urgency, steps, re-check']],
+    say: ['I’m dizzy', 'can’t breathe well', 'no nausea'],
+    tags: [['dizziness ✓', 'ok'], ['shortness of breath ✓', 'ok'], ['nausea — negated', 'neg']],
+    b: ['No internet needed', 'A single HTML file', 'Ukrainian and English'] },
+  html: (t, L, i) => solHtml(t, i, badges(t)),
+  play(el, t) {
+    const box = el.querySelector('.f-type'), tx = el.querySelector('.f-txt');
+    typeIn(tx, t.say.join(', '), 1700, 26, () => {
+      tx.innerHTML = t.say.map((p, k) => `<span class="hl${k === 2 ? ' neg' : ''}">${esc(p)}</span>`).join(', ');
+      void tx.offsetWidth;
+      box.classList.add('parsed');
+    });
+  }
+},
+{
+  id: 'why', mood: [1720, 160, 720, .2, 'm'],
+  uk: { k: 'Пояснюване рішення', h: 'Кожне рішення показує, *чому*', cap: 'Як система ухвалила рішення',
+    ev: [['SpO₂ 90% при нормі 98%', 4], ['CO₂ у модулі 8,5 мм рт. ст. при нормативі NASA 3', 4], ['Запаморочення', 3], ['Задишка', 3]],
+    sum: 'Сума доказів', p: 'Протокол', dx: 'Надлишок CO₂', dxs: 'і нестача кисню', lv: 'Терміново',
+    sc: ['Самодопомога', 'Потрібен медофіцер', 'Терміново', 'Загроза життю'],
+    st: ['Перейти в модуль із нормальним повітрям', 'Надягнути кисневу маску', 'Сісти, зафіксуватися, дихати повільно', 'Замінити поглинач CO₂'],
+    re: 'Повторна перевірка показників: до і після' },
+  en: { k: 'Explainable decisions', h: 'Every decision shows *why*', cap: 'How the system decided',
+    ev: [['SpO₂ 90% vs baseline 98%', 4], ['CO₂ in module 8.5 mmHg vs NASA limit 3', 4], ['Dizziness', 3], ['Shortness of breath', 3]],
+    sum: 'Total evidence', p: 'Protocol', dx: 'Excess CO₂', dxs: 'and low oxygen', lv: 'Urgent',
+    sc: ['Self-care', 'Needs medical officer', 'Urgent', 'Life-threatening'],
+    st: ['Move to a module with normal air', 'Put on the oxygen mask', 'Sit down, strap in, breathe slowly', 'Replace the CO₂ scrubber'],
+    re: 'Automatic vitals re-check: before and after' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="y-grid"><div class="card y-ev up" ${D(250)}><div class="y-cap">${esc(t.cap)}</div>
+${t.ev.map((e, k) => `<div class="y-row up" ${D(450 + k * 220)}><div class="y-l">${esc(e[0])}</div><div class="y-track"><i class="grow" style="--d:${650 + k * 220}ms;width:${e[1] * 25}%"></i></div><b class="y-w pop" ${D(1000 + k * 220)}>+${e[1]}</b></div>`).join('')}
+<div class="y-sum up" ${D(1500)}><span>${esc(t.sum)}</span><b>+${cnt(14, 0, 1600, 900)}</b></div></div>
+<div class="card y-dx pop" ${D(1950)}><div class="y-k">${esc(t.p)}</div><div class="y-name">${esc(t.dx)}</div><div class="y-sub">${esc(t.dxs)}</div>
+<div class="y-lv"><i></i>${esc(t.lv)}</div><div class="y-scale">${t.sc.map(s => `<span>${esc(s)}</span>`).join('')}</div>
+<ol class="y-steps">${t.st.map((s, k) => `<li class="up" ${D(2350 + k * 170)}><i></i>${esc(s)}</li>`).join('')}</ol>
+<div class="y-re up" ${D(3100)}>${ico('clock', 'sm')}<span>${esc(t.re)}</span></div></div></div>`
+},
+{
+  id: 'catalog', mood: [960, 1180, 1000, .24, 'm'],
+  uk: { k: 'Каталог', h: 'Шукайте *своїми словами*',
+    n: [[2792, 'реальні проблеми у 15 розділах'], [14240, 'формулювань для пошуку'], [363, 'червоні прапорці — терміновість зростає автоматично']],
+    p1: ['закладає вухо', 'болить голова', 'печія', 'не можу заснути', 'свербить шкіра', 'ниє поперек', 'сухість в очах'],
+    p2: ['нудить', 'болить зуб', 'закладений ніс', 'судома в нозі', 'кров із носа', 'дзвенить у вухах', 'болить горло'],
+    abc: 'АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ', note: 'Абетка А–Я · 15 розділів · екіпаж додає власні проблеми' },
+  en: { k: 'Catalog', h: 'Search *in your own words*',
+    n: [[2792, 'real problems in 15 sections'], [15444, 'search phrasings'], [363, 'red flags that raise urgency automatically']],
+    p1: ['blocked ear', 'headache', 'heartburn', 'can’t sleep', 'itchy skin', 'aching lower back', 'dry eyes'],
+    p2: ['feel sick', 'toothache', 'stuffy nose', 'leg cramp', 'nosebleed', 'ringing in my ears', 'sore throat'],
+    abc: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', note: 'A–Z index · 15 sections · the crew adds its own' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="c-nums">${t.n.map((n, k) => `<div class="c-n up${k === 2 ? ' red' : ''}" ${D(300 + k * 150)}><b>${cnt(n[0], 0, 450 + k * 150, 1900)}</b><span>${esc(n[1])}</span></div>`).join('')}</div>
+<div class="c-mq up" ${D(900)}><div class="mq"><div class="mq-in">${mq(t.p1)}</div></div><div class="mq r"><div class="mq-in">${mq(t.p2)}</div></div></div>
+<div class="c-abc up" ${D(1100)}><div class="abc">${[...t.abc].map((c, k) => `<i ${D(1200 + k * 35)}>${c}</i>`).join('')}</div><span>${esc(t.note)}</span></div>`
+},
+{
+  id: 'card', mood: [220, 200, 820, .16, 'm'],
+  uk: { k: 'Медкартка, люди, щоденна перевірка', h: 'Медична картка *для кожного*', who: 'Пілот', ct: 'Медкартка', q: 'поперек', sev: 3,
+    f: ['Проблема', 'Сила', 'Початок', 'Нотатки'], prob: 'Біль у попереку', on: 'кілька днів тому', note: 'гірше, коли нахиляюся',
+    db: 'Люди', add: 'Додати',
+    ppl: [['Командир', 'пульс 60 · SpO₂ 98% · 36,6 °C', ''], ['Бортінженер', 'пульс 66 · SpO₂ 98% · 36,7 °C', 'Алергія: пеніциліни'], ['Медофіцер', 'пульс 58 · SpO₂ 99% · 36,5 °C', ''], ['Пілот', 'пульс 54 · SpO₂ 98% · 36,6 °C', 'Алергія: НПЗП']],
+    cap: 'Алергії змінюють вибір ліків, а особиста норма видна в поясненні рішення' },
+  en: { k: 'Medical card, people, daily check-in', h: 'A medical card *for everyone*', who: 'Pilot', ct: 'Medical card', q: 'back', sev: 3,
+    f: ['Problem', 'Severity', 'Onset', 'Notes'], prob: 'Lower back pain', on: 'a few days ago', note: 'worse when bending over',
+    db: 'People', add: 'Add',
+    ppl: [['Commander', 'pulse 60 · SpO₂ 98% · 36.6 °C', ''], ['Flight engineer', 'pulse 66 · SpO₂ 98% · 36.7 °C', 'Allergy: penicillins'], ['Medical officer', 'pulse 58 · SpO₂ 99% · 36.5 °C', ''], ['Pilot', 'pulse 54 · SpO₂ 98% · 36.6 °C', 'Allergy: NSAIDs']],
+    cap: 'Allergies change which drugs are offered; the personal baseline shows in the explanation' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="m-grid"><div class="card m-card up" ${D(250)}><div class="m-top"><div class="m-av">${ico('user', 'sm')}</div><div><b>${esc(t.who)}</b><small>${esc(t.ct)}</small></div></div>
+<div class="m-search">${ico('search', 'sm')}<span class="m-q"></span><i class="caret"></i></div>
+<dl class="m-f"><div class="up" ${D(800)}><dt>${esc(t.f[0])}</dt><dd>${esc(t.prob)}</dd></div>
+<div class="up" ${D(920)}><dt>${esc(t.f[1])}</dt><dd><span class="m-sev">${Array.from({ length: 10 }, (_, k) => `<i class="pop${k < t.sev ? ' on' : ''}" ${D(1050 + k * 70)}></i>`).join('')}</span><b class="m-sv">${t.sev}/10</b></dd></div>
+<div class="up" ${D(1040)}><dt>${esc(t.f[2])}</dt><dd>${esc(t.on)}</dd></div>
+<div class="up" ${D(1160)}><dt>${esc(t.f[3])}</dt><dd class="m-note">${esc(t.note)}</dd></div></dl></div>
+<div class="card m-db up" ${D(450)}><div class="m-dbh"><b>${esc(t.db)}</b><span class="m-add">+ ${esc(t.add)}</span></div>
+${t.ppl.map((p, k) => `<div class="m-p up" ${D(700 + k * 140)}><div class="m-av s">${ico('user', 'sm')}</div><div class="m-pi"><b>${esc(p[0])}</b><small>${esc(p[1])}</small></div>${p[2] ? `<span class="m-al">${esc(p[2])}</span>` : ''}<span class="m-ed">${ico('pen', 'sm')}</span></div>`).join('')}
+<div class="m-cap up" ${D(1400)}>${esc(t.cap)}</div></div></div>
+${checkin(CHECKIN[L], 1500, 'row')}`,
+  play(el, t) { typeIn(el.querySelector('.m-q'), t.q, 700, 12); }
+}
+];
+
+/* Slides 8-14 */
+/* SpO₂ baselines of the app's default crew: Commander, Flight engineer, Medical officer, Pilot */
+const CREW_SPO2 = [98, 98, 99, 98];
+/* NASA Human Research Program: the five hazards of human spaceflight (nasa.gov/hrp/hazards), in NASA's order,
+   and what Asklepios does about each. [icon, hazard, features, evidence] */
+const HZ = {
+  uk: [['rad', 'Космічна радіація', ['Доза радіації', 'Сонячний спалах', 'Активність ліків'], 'Curiosity RAD · CSA 2026'],
+    ['iso', 'Ізоляція і замкнутість', ['Щоденна перевірка: сон і настрій', 'Тренд за 7 днів', 'Нагадування щодня'], 'HRP: сон, поведінка'],
+    ['dist', 'Відстань від Землі', ['Рішення офлайн', 'Аптечка на всю місію', 'Режим «Медик захворів»', 'Навчальні тривоги'], 'NASA: 3–22 хв, ~13 днів'],
+    ['grav', 'Гравітаційні поля', ['SANS', 'Біль у спині', 'Ниркова коліка', 'Ритм серця'], 'HRP: SANS, кістки, серце'],
+    ['wind', 'Вороже замкнуте середовище', ['Накопичення CO₂', 'Вартовий розгерметизації', 'Декомпресія після виходу'], 'NASA-STD-3001: CO₂ ≤ 3']],
+  en: [['rad', 'Space radiation', ['Radiation dose', 'Solar flare', 'Drug potency'], 'Curiosity RAD · CSA 2026'],
+    ['iso', 'Isolation and confinement', ['Daily check-in: sleep and mood', '7-day trend', 'Daily reminder'], 'HRP: sleep, behavior'],
+    ['dist', 'Distance from Earth', ['Offline decisions', 'Pharmacy for the whole mission', '“The medic is ill” mode', 'Training alarms'], 'NASA: 3–22 min, ~13 days'],
+    ['grav', 'Gravity fields', ['SANS', 'Back pain', 'Kidney colic', 'Heart rhythm'], 'HRP: SANS, bone, heart'],
+    ['wind', 'Hostile closed environments', ['CO₂ build-up', 'Depressurization guardian', 'Decompression after a spacewalk'], 'NASA-STD-3001: CO₂ ≤ 3']]
+};
+/* hazard → features rows; src = show the evidence column */
+function hzRows(list, d0, src) {
+  return `<div class="hz${src ? ' hz-src' : ''}">${list.map((h, k) => `<div class="hz-r up" ${D(d0 + k * 120)}><span class="hz-i">${ico(h[0], 'sm')}</span><span class="hz-k"><b class="hz-n">${esc(h[1])}</b>${src ? `<em class="hz-e">${esc(h[3])}</em>` : ''}</span>` +
+    `<svg class="hz-ar" viewBox="0 0 40 16" aria-hidden="true"><path class="draw" pathLength="1" ${D(d0 + 250 + k * 120)} d="M2 8H36M29 2l7 6-7 6"/></svg>` +
+    `<span class="hz-f">${h[2].map(f => `<span>${esc(f)}</span>`).join('')}</span></div>`).join('')}</div>`;
+}
+const NV = [
+  '<svg viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true"><path class="n-ecg" pathLength="1" d="M0 44H110l12-28 14 54 12-42 8 16h30l10-8 10 8h44l12-28 14 54 12-42 8 16H400"/></svg>',
+  '<svg viewBox="0 0 375 80" preserveAspectRatio="none" aria-hidden="true"><path class="n-wave" d="M0 40C25 10 50 10 75 40S125 70 150 40 200 10 225 40 275 70 300 40 350 10 375 40"/></svg>',
+  '<div class="n-bub"><span></span><span></span><span></span></div>'
+];
+
+SLIDES.push(
+{
+  id: 'pharm', mood: [1600, 900, 820, .24, 'm'],
+  uk: { k: 'Аптечка', h: 'Аптечка *на всю місію*', drug: 'Амоксицилін/клавуланат 875 мг', grp: 'антибіотик · група пеніцилінів',
+    have: 'Є на борту', hv: '1 курс', need: 'Потрібно до кінця місії', nv: '4 курси',
+    warn: 'Не вистачить до кінця місії — поповнення не буде', alg: 'Алергія на пеніциліни → заміна з іншої групи',
+    pot: 'Активність ліків під радіацією', model: 'умовна модель', day: 'день 214 · ~1,8 мЗв/добу', how: 'за радіочутливістю ліків', caut: 'Нижче 90% — сигнал медофіцеру' },
+  en: { k: 'Pharmacy', h: 'A pharmacy for *the whole mission*', drug: 'Amoxicillin/clavulanate 875 mg', grp: 'antibiotic · penicillin group',
+    have: 'On board', hv: '1 course', need: 'Needed until the mission ends', nv: '4 courses',
+    warn: 'Won’t last until the end of the mission — no resupply', alg: 'Penicillin allergy → substitute from another class',
+    pot: 'Drug potency under radiation', model: 'approximate model', day: 'day 214 · ~1.8 mSv/day', how: 'modeled by drug radiosensitivity', caut: 'Below 90%: alert the medical officer' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="ph-grid"><div class="card ph-l up" ${D(250)}><div class="ph-drug">${icb('pill')}<div><b>${esc(t.drug)}</b><small>${esc(t.grp)}</small></div></div>
+<div class="ph-bars"><div class="ph-row"><span>${esc(t.have)}</span><b>${esc(t.hv)}</b><div class="ph-tr left"><i class="grow" ${D(700)}></i></div></div>
+<div class="ph-row"><span>${esc(t.need)}</span><b>${esc(t.nv)}</b><div class="ph-tr need"><i class="grow" ${D(1000)}></i></div></div></div>
+<div class="ph-warn up" ${D(1600)}>${ico('alert', 'sm')}<span>${esc(t.warn)}</span></div>
+<div class="ph-sub up" ${D(1900)}>${ico('swap', 'sm')}<span>${esc(t.alg)}</span></div></div>
+<div class="card ph-r up" ${D(450)}><div class="ph-cap">${esc(t.pot)}</div>
+<svg class="ph-g" viewBox="0 0 520 290" aria-hidden="true"><defs><linearGradient id="gG" x1="0" x2="1"><stop offset="0" stop-color="#d6683a"/><stop offset=".6" stop-color="#e8c547"/><stop offset="1" stop-color="#5fd1c9"/></linearGradient></defs>
+<path class="ph-bg" d="M60 260A200 200 0 0 1 460 260"/><path class="ph-val" pathLength="1" d="M60 260A200 200 0 0 1 460 260"/>
+<path class="ph-tick" d="M431 204L471 191"/><g class="ph-ndl" transform="rotate(66.6 260 260)"><path d="M260 260V96"/><circle cx="260" cy="260" r="14"/></g></svg>
+<div class="ph-v"><b class="ph-pct">87</b><span>%</span></div><div class="ph-note">${esc(t.day)}<br><span class="ph-model">${esc(t.model)}</span>${esc(t.how)}</div>
+<div class="ph-c up" ${D(2900)}>${esc(t.caut)}</div></div></div>`,
+  play(el) {
+    const v = el.querySelector('.ph-val'), n = el.querySelector('.ph-ndl'), p = el.querySelector('.ph-pct');
+    const set = f => {
+      v.style.strokeDashoffset = (1 - f).toFixed(4);
+      n.setAttribute('transform', `rotate(${(-90 + 180 * f).toFixed(2)} 260 260)`);
+      p.textContent = Math.round(f * 100);
+    };
+    /* fill to 100%, hold, then decay to 87%, the app's value for this drug on day 214
+       (app model: 100 - radiosensitivity 1.3 x day 214 x 1.8 / 40 = 87) */
+    tween(2700, k => set(k < .26 ? easeOut(k / .26) : k < .4 ? 1 : 1 - .13 * easeIO((k - .4) / .6)), 700, x => x);
+  }
+},
+{
+  id: 'drill', mood: [960, 560, 1000, .24, 'r'],
+  uk: { k: 'Тестовий режим', h: 'Навчальна тривога: *2 хвилини* на порятунок', al: 'Навчальна тривога',
+    sc: ['Задуха', 'Аритмія', 'Ниркова коліка', 'Декомпресія'], hr: 'Пульс', bpm: 'уд/хв',
+    worse: 'Без допомоги стан погіршується', stab: 'Стан стабілізовано', rem: 'залишилося', res: 'Результат', g: 'Відмінно',
+    br: ['Час: 0:33 із 2:00', 'Протокол: надлишок CO₂', 'Стан: стабілізовано'], gs: ['Відмінно', 'Добре', 'Встигли в останню мить', 'Не встигли'] },
+  en: { k: 'Test mode', h: 'Training alarm: *2 minutes* to save a life', al: 'Training alarm',
+    sc: ['Suffocation', 'Arrhythmia', 'Kidney colic', 'Decompression'], hr: 'Pulse', bpm: 'bpm',
+    worse: 'Without help, it gets worse', stab: 'Condition stabilized', rem: 'remaining', res: 'Result', g: 'Excellent',
+    br: ['Time: 0:33 of 2:00', 'Protocol: excess CO₂', 'Condition: stabilized'], gs: ['Excellent', 'Good', 'Just in time', 'Too late'] },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="d-grid"><div class="card d-alarm up" ${D(250)}><div class="d-al"><i></i>${esc(t.al)}</div>
+<div class="d-sc">${t.sc.map((s, k) => `<span class="${k ? '' : 'on'}">${esc(s)}</span>`).join('')}</div>
+<div class="d-vit"><div><small>SpO₂</small><b class="d-spo">95</b><em>%</em></div><div><small>${esc(t.hr)}</small><b class="d-hr">88</b><em>${esc(t.bpm)}</em></div></div>
+<div class="d-st"><span class="d-bad">${esc(t.worse)}</span><span class="d-ok">${esc(t.stab)}</span></div></div>
+<div class="d-mid pop" ${D(450)}><svg class="d-ring" viewBox="0 0 400 400" aria-hidden="true"><path class="d-rbg" d="M200 30a170 170 0 1 1 0 340a170 170 0 1 1 0-340"/><path class="d-rv" pathLength="1" d="M200 30a170 170 0 1 1 0 340a170 170 0 1 1 0-340"/></svg>
+<div class="d-time"><b class="d-t">1:27</b><small>${esc(t.rem)}</small></div></div>
+<div class="card d-grade"><div class="d-gk">${esc(t.res)}</div><div class="d-g">${esc(t.g)}<span>: 0:33</span></div>
+<ul>${t.br.map((b, k) => `<li style="--k:${k}"><i></i>${esc(b)}</li>`).join('')}</ul>
+<div class="d-scale">${t.gs.map((g, k) => `<span class="${k ? '' : 'on'}">${esc(g)}</span>`).join('')}</div></div></div>`,
+  play(el) {
+    const g = el.querySelector('.d-grid'), rv = el.querySelector('.d-rv'), tt = el.querySelector('.d-t');
+    const sp = el.querySelector('.d-spo'), hr = el.querySelector('.d-hr');
+    const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    g.classList.add('run');
+    /* 33 s of the 2:00 drill, played at 10x */
+    tween(3300, k => {
+      const e = 33 * k;
+      rv.style.strokeDashoffset = (e / 120).toFixed(4);
+      tt.textContent = mmss(120 - e);
+      sp.textContent = Math.round(96 - e * .2);
+      hr.textContent = Math.round(82 + e * 1.1);
+    }, 1100, x => x);
+    later(4700, () => {
+      g.classList.remove('run'); g.classList.add('done');
+      tween(1400, k => { sp.textContent = Math.round(89 + 6 * k); hr.textContent = Math.round(118 - 30 * k); }, 0, easeOut, false);
+    });
+  }
+},
+{
+  id: 'guard', mood: [1500, 300, 900, .26, 'r'],
+  uk: { k: 'Вартовий екіпажу', h: 'Екіпаж непритомний —\n*корабель діє сам*', crew: ['Командир', 'Бортінженер', 'Медофіцер', 'Пілот'],
+    mods: ['Шлюз', 'Лабораторія', 'Житловий'], name: 'Вартовий екіпажу', auto: 'автономно',
+    log: [['Розгерметизація: тиск падає', 'r'], ['Екіпаж: SpO₂ нижче 88%, реакції немає', 'r'], ['Автономні дії через 6 с', 'o'], ['Увімкнено сирену й аварійне освітлення', 't'], ['Люки зачинено, витік ізольовано в шлюзі', 't'], ['Подача кисню з резерву', 't'], ['Показники екіпажу відновилися', 'g']] },
+  en: { k: 'Crew guardian', h: 'The crew is down —\n*the ship acts on its own*', crew: ['Commander', 'Flight engineer', 'Medical officer', 'Pilot'],
+    mods: ['Airlock', 'Lab', 'Habitat'], name: 'Crew guardian', auto: 'autonomous',
+    log: [['Depressurization: pressure dropping', 'r'], ['Crew: SpO₂ below 88%, no response', 'r'], ['Autonomous action in 6 s', 'o'], ['Siren and emergency lights on', 't'], ['Hatches closed, leak isolated in the airlock', 't'], ['Oxygen supplied from reserve', 't'], ['Crew vitals recovered', 'g']] },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="g-grid"><div class="g-left"><div class="g-crew">${t.crew.map((c, k) => `<div class="card g-m up" ${D(300 + k * 110)}>${ico('user', 'sm')}<div><b>${esc(c)}</b><small>SpO₂ <span class="g-s">${CREW_SPO2[k]}</span>%</small></div><i class="g-st"></i></div>`).join('')}</div>
+<div class="card g-ship up" ${D(750)}><svg viewBox="0 0 600 200" aria-hidden="true">
+<rect class="g-mod a" x="10" y="30" width="160" height="120" rx="26"/><rect class="g-mod" x="200" y="30" width="190" height="120" rx="26"/><rect class="g-mod" x="420" y="30" width="170" height="120" rx="26"/>
+<path class="g-hatch" pathLength="1" d="M185 42V138"/>
+<g class="g-leak"><circle cx="14" cy="90" r="6"/><circle cx="14" cy="90" r="6"/><circle cx="14" cy="90" r="6"/></g>
+<g class="g-o2"><circle cx="240" cy="90" r="7"/><circle cx="300" cy="70" r="7"/><circle cx="355" cy="110" r="7"/><circle cx="465" cy="80" r="7"/><circle cx="540" cy="105" r="7"/></g>
+${t.mods.map((m, k) => `<text x="${[90, 295, 505][k]}" y="186">${esc(m)}</text>`).join('')}</svg></div></div>
+<div class="card g-log up" ${D(500)}><div class="g-h">${ico('shield', 'sm')}<b>${esc(t.name)}</b><span class="g-mode">${esc(t.auto)}</span></div>
+<ol>${t.log.map(l => `<li class="${l[1]}">${esc(l[0])}</li>`).join('')}</ol></div></div>`,
+  play(el) {
+    const tiles = [...el.querySelectorAll('.g-m')], ss = [...el.querySelectorAll('.g-s')], li = [...el.querySelectorAll('.g-log li')];
+    const log = el.querySelector('.g-log'), ship = el.querySelector('.g-ship');
+    const hi = CREW_SPO2, lo = [84, 86, 83, 85];
+    const spo = (a, b) => k => ss.forEach((s, j) => { s.textContent = Math.round(a[j] + (b[j] - a[j]) * k); });
+    [700, 2000, 2600, 3700, 4300, 4900, 6900].forEach((at, k) => later(at, () => li[k].classList.add('on')));
+    later(700, () => ship.classList.add('leak'));
+    tween(1500, spo(hi, lo), 1000, easeIO);
+    tiles.forEach((m, j) => later(1700 + j * 150, () => m.classList.add('down')));
+    later(2600, () => log.classList.add('auto'));
+    later(4300, () => ship.classList.add('hatch'));
+    later(4900, () => ship.classList.add('o2'));
+    tween(2000, spo(lo, hi), 5200, easeIO, false);
+    later(6900, () => tiles.forEach(m => { m.classList.remove('down'); m.classList.add('ok'); }));
+  }
+},
+{
+  id: 'hazards', mood: [1560, 1000, 950, .22, 'm'],
+  uk: { k: 'NASA HRP', h: '5 небезпек польоту — *5 відповідей* на борту',
+    lead: 'Програма досліджень людини NASA називає п’ять небезпек польоту. Ось що Асклепій робить із кожною.', hz: HZ.uk,
+    src: 'Джерела: NASA HRP — «5 Hazards of Human Spaceflight», «Risks of Human Spaceflight» · CSA — «Monitoring Radiation for Astronaut Health», 2026' },
+  en: { k: 'NASA HRP', h: '5 hazards of spaceflight — *5 answers* on board',
+    lead: 'NASA’s Human Research Program names five hazards of spaceflight. Here is what Asklepios does about each.', hz: HZ.en,
+    src: 'Sources: NASA HRP — “5 Hazards of Human Spaceflight”, “Risks of Human Spaceflight” · CSA — “Monitoring Radiation for Astronaut Health”, 2026' },
+  html: (t, L, i) => `${hd(t, i)}
+${hzRows(t.hz, 450, true)}
+<p class="hz-cite up" ${D(1250)}>${esc(t.src)}</p>`
+},
+{
+  id: 'science', mood: [380, 920, 900, .22, 'm'],
+  uk: { k: 'Наука', h: 'Реальна наука *за кожною цифрою*',
+    f: [['3–', 22, 0, ' хв', 'затримка сигналу між Марсом і Землею в один бік; ~13 днів без зв’язку, коли між ними Сонце', 'NASA'],
+      ['≤ ', 3, 0, ' мм рт. ст.', 'норматив NASA для CO₂ (середнє за 1 год); з кожним +1 мм рт. ст. шанси головного болю приблизно подвоюються', 'NASA OCHMO · Law et al. 2014'],
+      ['~', 38, 0, ' °C', '«космічна лихоманка»: +1 °C у спокої за ~2,5 місяця, на тренуванні — понад 40 °C', 'Stahn et al., Sci. Rep. 2017'],
+      ['~', 1.8, 1, ' мЗв/добу', 'радіація на шляху до Марса', 'Curiosity RAD · SwRI'],
+      ['≈', 30, 0, '%', 'радіації на МКС — нейтрони; канадський прилад CANS вимірюватиме їх безперервно й автономно', 'CSA, 2026'],
+      ['~', 48, 0, ' год', 'батарея Astroskin: ЕКГ, дихання, температура шкіри, пульс і SpO₂', 'CSA']] },
+  en: { k: 'The science', h: 'Real science *behind every number*',
+    f: [['3–', 22, 0, ' min', 'one-way signal delay between Mars and Earth; ~13 days of blackout when the Sun is between them', 'NASA'],
+      ['≤ ', 3, 0, ' mmHg', 'NASA CO₂ limit (1-hour average); headache odds roughly double with every +1 mmHg', 'NASA OCHMO · Law et al. 2014'],
+      ['~', 38, 0, ' °C', '“space fever”: +1 °C at rest over ~2.5 months, above 40 °C during exercise', 'Stahn et al., Sci. Rep. 2017'],
+      ['~', 1.8, 1, ' mSv/day', 'radiation in cruise to Mars', 'Curiosity RAD · SwRI'],
+      ['≈', 30, 0, '%', 'of the radiation on the ISS is neutrons; Canada’s CANS will measure them continuously and autonomously', 'CSA, 2026'],
+      ['~', 48, 0, ' h', 'Astroskin battery: ECG, breathing, skin temperature, pulse & SpO₂', 'CSA']] },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="sc-grid">${t.f.map((f, k) => `<div class="card sc-t up" ${D(250 + k * 120)}><svg class="sc-ln" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="1" ${D(550 + k * 120)} d="M0 2H100"/></svg>
+<div class="sc-v">${esc(f[0])}${cnt(f[1], f[2], 450 + k * 120, 1600)}<small>${esc(f[3])}</small></div><p>${esc(f[4])}</p><em class="src">${esc(f[5])}</em></div>`).join('')}</div>`
+},
+{
+  id: 'next', mood: [1600, 900, 900, .24, 'm'],
+  uk: { k: 'Що далі', h: 'Наступні кроки — *теж офлайн*',
+    c: [['Bluetooth-датчики', 'Нагрудні пульсометри через Web Bluetooth: пульс наживо, без проводів і хмари.'],
+      ['Пульс з камери (rPPG)', 'Пульс за ледь помітною зміною кольору шкіри обличчя на відео.'],
+      ['Бортова мовна модель', 'Локальна мовна модель: розмова з медиком без інтернету.']],
+    earth: 'І на Землі: *полярні станції, судна в морі*, місця без зв’язку',
+    foot: 'Без хмари. Без Землі. *Завжди на борту.*' },
+  en: { k: 'What’s next', h: 'Next steps — *still offline*',
+    c: [['Bluetooth sensors', 'Heart-rate chest straps via Web Bluetooth: live pulse, no wires, no cloud.'],
+      ['Camera pulse (rPPG)', 'Pulse from subtle color changes in facial skin on video.'],
+      ['Onboard language model', 'A local language model: talk to the medic with no internet.']],
+    earth: 'On Earth too: *polar stations, ships at sea*, places with no connection',
+    foot: 'No cloud. No Earth link. *Always on board.*' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="n-grid">${t.c.map((c, k) => `<div class="card n-c up" ${D(300 + k * 160)}><div class="ico big">${ico(['bt', 'cam', 'chip'][k])}</div><h3>${esc(c[0])}</h3><p>${esc(c[1])}</p><div class="n-viz">${NV[k]}</div></div>`).join('')}</div>
+<div class="n-foot up" ${D(1000)}>${ico('sigoff')}<span>${kt(t.foot, 1100, 60)}</span></div>
+<div class="nx-earth n-earth up" ${D(1700)}>${ico('earth')}<span>${kt(t.earth, 1800, 50)}</span></div>`
+},
+{
+  id: 'thanks', edge: true, mood: [960, 1040, 1100, .32, 'm'],
+  uk: { h: 'Дякуємо!', tag: 'Асклепій — лікар, який *завжди на борту*', team: 'Команда:', mem: 'Учасники:',
+    tr: 'Спробуйте самі:', file: 'один файл, працює без інтернету' },
+  en: { h: 'Thank you!', tag: 'Asklepios — the doctor who is *always on board*', team: 'Team:', mem: 'Members:',
+    tr: 'Try it yourself:', file: 'one file, works offline' },
+  html: (t, L) => `<div class="ctr">
+<div class="lw pop" ${D(100)}><i class="ring"></i><i class="ring r2"></i><i class="logo big"></i></div>
+<h1 class="h1" aria-label="${esc(t.h)}">${kc(t.h, 350, 60)}</h1>
+<p class="t-tag">${kt(t.tag, 950, 60)}</p>
+<div class="team-box up" ${D(1500)}>${teamRow(t.team, TEAM_INFO.name)}${teamRow(t.mem, members(L), true)}</div>
+<p class="try up" ${D(2000)}>${ico('link', 'sm')}<span>${esc(t.tr)}</span>${tryLink()}<em>· ${esc(t.file)}</em></p></div>`
+}
+);
+/* the project link once LINK_INFO is filled in; until then index.html, a working link in the offline file
+   (it sits next to index.html) and plain text in the published Artifact */
+function tryLink() {
+  const v = String(LINK_INFO.project || '').trim();
+  if (!filled(v)) return typeof LOCAL_BUILD !== 'undefined' && LOCAL_BUILD ? '<a href="index.html" target="_blank" rel="noopener">index.html</a>' : '<b>index.html</b>';
+  const href = /^https?:\/\//i.test(v) ? v : 'https://' + v;
+  return `<a href="${esc(href)}" target="_blank" rel="noopener">${esc(v.replace(/^https?:\/\//i, '').replace(/\/$/, ''))}</a>`;
+}
+
+/* Submission deck for NASA Space Apps (at most 7 slides including the title, English only).
+   Built only with build-deck.js --set=submission. Reuses the full deck's builders, styles and motion. */
+const pickSlide = (id, en) => { const s = SLIDES.find(x => x.id === id); return Object.assign({}, s, { en: Object.assign({}, s.en, en || {}) }); };
+const ORBIT = `<div class="orbit"><svg viewBox="0 0 1600 700" aria-hidden="true"><path class="draw" ${D(200)} pathLength="1" d="M100 350a700 250 0 1 0 1400 0a700 250 0 1 0 -1400 0"/></svg><i class="odot"></i></div>`;
+const SOL = SLIDES.find(x => x.id === 'solution');
+
+const SUB_SLIDES = [
+{
+  id: 'title7', edge: true, mood: [1480, 920, 860, .32, 'm'],
+  en: { name: 'Asklepios', tag: 'The doctor who is *always on board*', sub: 'An offline AI medic for a crew on its way to Mars',
+    ev: 'NASA Space Apps Challenge 2026', ch: 'Challenge', chv: 'Create Health Monitoring Software for Astronauts on Space Missions',
+    team: 'Team', mem: 'Members' },
+  html: (t, L) => `<div class="ctr t7">${ORBIT}
+<div class="lw pop" ${D(120)}><i class="ring"></i><i class="ring r2"></i><i class="logo big"></i></div>
+<h1 class="h1" aria-label="${esc(t.name)}">${kc(t.name, 380, 55)}</h1>
+<p class="t-tag">${kt(t.tag, 900, 70)}</p>
+<p class="sub up" ${D(1350)}>${esc(t.sub)}</p>
+<div class="t7-meta up" ${D(1650)}><div class="t7-ev">${esc(t.ev)}</div>
+<div class="t7-row"><span class="t7-k">${esc(t.ch)}</span><b>${esc(t.chv)}</b></div>
+${teamRow(t.team, TEAM_INFO.name)}${teamRow(t.mem, members(L), true)}</div>
+<div class="hint fade" ${D(2900)}>${hint()}</div></div>`
+},
+pickSlide('problem'),
+{
+  /* the full deck's solution slide, with the daily check-in in place of the three badges */
+  id: 'solution7', mood: SOL.mood,
+  en: Object.assign({}, SOL.en, {
+    lead: 'Monitoring tracks pulse, SpO₂ and temperature; a daily check-in adds sleep, mood and blood sugar.' }),
+  html: (t, L, i) => solHtml(t, i, checkin(CHECKIN.en, 1300, 'stack'), true, badges(t, 'f-badges')),
+  play: SOL.play
+},
+pickSlide('why'),
+{
+  id: 'safety', mood: [1500, 300, 950, .24, 'r'],
+  en: { k: 'Safety net', h: 'Drills keep the crew ready.\n*The ship acts* if no one can.',
+    da: 'Training alarm', dp: 'A crewmate “falls ill”: help within 2 minutes', sc: ['Suffocation', 'Arrhythmia', 'Kidney colic', 'Decompression'],
+    rem: 'remaining', hr: 'Pulse', bpm: 'bpm', worse: 'Without help, it gets worse', res: 'Excellent: helped in 0:33',
+    ga: 'Crew guardian', auto: 'autonomous', crew: ['Commander', 'Flight engineer', 'Medical officer', 'Pilot'],
+    log: [['Depressurization: pressure dropping', 'r'], ['Crew: SpO₂ below 88%, no response', 'r'], ['Autonomous action in 6 s', 'o'], ['Hatches closed, oxygen from reserve', 't'], ['Crew vitals recovered', 'g']] },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="sf-grid"><div class="card d-alarm sf-d up" ${D(300)}><div class="d-al"><i></i>${esc(t.da)}</div><p class="sf-p">${esc(t.dp)}</p>
+<div class="d-sc">${t.sc.map((s, k) => `<span class="${k ? '' : 'on'}">${esc(s)}</span>`).join('')}</div>
+<div class="sf-dm"><div class="sf-ring"><svg class="d-ring" viewBox="0 0 400 400" aria-hidden="true"><path class="d-rbg" d="M200 30a170 170 0 1 1 0 340a170 170 0 1 1 0-340"/><path class="d-rv" pathLength="1" d="M200 30a170 170 0 1 1 0 340a170 170 0 1 1 0-340"/></svg>
+<div class="d-time"><b class="d-t">2:00</b><small>${esc(t.rem)}</small></div></div>
+<div class="d-vit sf-vit"><div><small>SpO₂</small><b class="d-spo">96</b><em>%</em></div><div><small>${esc(t.hr)}</small><b class="d-hr">82</b><em>${esc(t.bpm)}</em></div></div></div>
+<div class="d-st sf-st"><span class="d-bad">${esc(t.worse)}</span><span class="d-ok">${esc(t.res)}</span></div></div>
+<div class="card g-log sf-g up" ${D(450)}><div class="g-h">${ico('shield', 'sm')}<b>${esc(t.ga)}</b><span class="g-mode">${esc(t.auto)}</span></div>
+<div class="sf-crew">${t.crew.map((c, k) => `<div class="card g-m"><b>${esc(c)}</b><small>SpO₂ <span class="g-s">${CREW_SPO2[k]}</span>%</small><i class="g-st"></i></div>`).join('')}</div>
+<ol>${t.log.map(l => `<li class="${l[1]}">${esc(l[0])}</li>`).join('')}</ol></div></div>`,
+  play(el) {
+    /* training alarm: 33 s of the 2:00 drill at 10x, then the patient stabilizes.
+       run/done go on the grid (the drill styles are written as ".run .d-alarm"), after the card's entrance */
+    const d = el.querySelector('.sf-grid'), rv = el.querySelector('.d-rv'), tt = el.querySelector('.d-t');
+    const sp = el.querySelector('.d-spo'), hr = el.querySelector('.d-hr');
+    const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    later(1200, () => d.classList.add('run'));
+    tween(3300, k => {
+      const e = 33 * k;
+      rv.style.strokeDashoffset = (e / 120).toFixed(4);
+      tt.textContent = mmss(120 - e);
+      sp.textContent = Math.round(96 - e * .2);
+      hr.textContent = Math.round(82 + e * 1.1);
+    }, 1000, x => x);
+    later(4500, () => {
+      d.classList.remove('run'); d.classList.add('done');
+      tween(1400, k => { sp.textContent = Math.round(89 + 6 * k); hr.textContent = Math.round(118 - 30 * k); }, 0, easeOut, false);
+    });
+    /* crew guardian: everyone's SpO₂ falls, nobody answers, the ship isolates the leak and gives oxygen */
+    const g = el.querySelector('.sf-g'), tiles = [...el.querySelectorAll('.sf-crew .g-m')], ss = [...el.querySelectorAll('.sf-crew .g-s')], li = [...el.querySelectorAll('.sf-g li')];
+    const lo = [84, 86, 83, 85];
+    const spo = (a, b) => k => ss.forEach((s, j) => { s.textContent = Math.round(a[j] + (b[j] - a[j]) * k); });
+    [1600, 2900, 3500, 5200, 7200].forEach((at, k) => later(at, () => li[k].classList.add('on')));
+    tween(1500, spo(CREW_SPO2, lo), 1900, easeIO);
+    tiles.forEach((m, j) => later(2600 + j * 150, () => m.classList.add('down')));
+    later(3500, () => g.classList.add('auto'));
+    tween(2000, spo(lo, CREW_SPO2), 5400, easeIO, false);
+    later(7200, () => tiles.forEach(m => { m.classList.remove('down'); m.classList.add('ok'); }));
+  }
+},
+{
+  id: 'data', mood: [380, 920, 900, .22, 'm'],
+  en: { k: 'Science & data', h: 'Built on *NASA and CSA data*', hzl: 'NASA Human Research Program: 5 hazards → what Asklepios does', dl: 'Data and standards → how we use them',
+    f: [['≤ ', 3, 0, ' mmHg', 'CO₂ limit, 1-hour average', 'NASA-STD-3001 · OCHMO', 'Above it: a caution flag and evidence in the decision', 'wind'],
+      ['3–', 22, 0, ' min', 'one-way signal delay; ~13 days of blackout', 'NASA', 'So the medic runs on board, offline', 'sigoff'],
+      ['', 1.8, 1, ' mSv/day', 'radiation dose in cruise to Mars', 'Curiosity RAD · NASA / SwRI', 'Each crew member’s daily dose and the drug-potency model', 'rad'],
+      ['≈', 30, 0, '%', 'of ISS radiation is neutrons, tracked by CANS', 'CSA, 2026', 'Radiation is watched all the time, not in sessions', 'rad'],
+      ['~', 48, 0, ' h', 'Astroskin battery: ECG, breathing, SpO₂', 'CSA partner data', 'The sensor stream the monitor is built for', 'shirt']],
+    note: 'Crew vitals in the demo are simulated (real astronaut data is restricted). Sources: NASA HRP “5 Hazards of Human Spaceflight”, “Risks of Human Spaceflight”; CSA “Monitoring Radiation for Astronaut Health” (2026).' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="dt-lbl up" ${D(250)}><span>${esc(t.hzl)}</span><i></i></div>
+${hzRows(HZ.en, 350, true)}
+<div class="dt-lbl up" ${D(900)}><span>${esc(t.dl)}</span><i></i></div>
+<div class="dt-grid dt5">${t.f.map((f, k) => `<div class="card dt-t up" ${D(1000 + k * 110)}><svg class="sc-ln" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="1" ${D(1250 + k * 110)} d="M0 2H100"/></svg>
+<div class="dt-v">${esc(f[0])}${cnt(f[1], f[2], 1150 + k * 110, 1400)}<small>${esc(f[3])}</small></div><p>${esc(f[4])}</p><em class="src">${esc(f[5])}</em>
+<div class="dt-use">${ico(f[7], 'sm')}<span>${esc(f[6])}</span></div></div>`).join('')}</div>
+<p class="dt-note up" ${D(1600)}>${esc(t.note)}</p>`
+},
+{
+  id: 'next7', mood: [1600, 900, 900, .24, 'm'],
+  en: { k: 'What’s next', h: 'Next: real sensors — *still offline*',
+    c: [['Bluetooth sensors', 'Live pulse from chest straps via Web Bluetooth', 'bt'], ['Camera pulse (rPPG)', 'Pulse from subtle color changes in facial skin', 'cam'], ['Onboard language model', 'Talk to the medic with no internet', 'chip']],
+    earth: 'On Earth too: *polar stations, ships at sea*, places with no connection',
+    tr: 'Try it yourself', file: ['One HTML file', 'works offline', 'Ukrainian and English'],
+    foot: 'No cloud. No Earth link. *Always on board.*' },
+  html: (t, L, i) => `${hd(t, i)}
+<div class="nx-grid">${t.c.map((c, k) => `<div class="card nx-c up" ${D(300 + k * 150)}><div class="nx-h"><div class="ico">${ico(c[2])}</div><h3>${esc(c[0])}</h3></div><p>${esc(c[1])}</p><div class="n-viz">${NV[k]}</div></div>`).join('')}</div>
+<div class="nx-earth up" ${D(850)}>${ico('earth')}<span>${kt(t.earth, 950, 50)}</span></div>
+<div class="card nx-try up" ${D(1300)}>${icb('link')}<div class="nx-tl"><small>${esc(t.tr)}</small><div class="nx-link">${tryLink()}</div></div><span class="nx-file">${t.file.map(f => `<span>${esc(f)}</span>`).join(' · ')}</span></div>
+<div class="n-foot nx-foot up" ${D(1700)}>${ico('sigoff')}<span>${kt(t.foot, 1800, 60)}</span></div>`
+}
+];
+
+/* Engine: helpers, starfield, navigation, hash, language, counters, replay.
+   Three decks share it; build-deck.js --set=… decides which slide list is in the page:
+     full        SLIDES      bilingual pitch deck
+     submission  SUB_SLIDES  English-only 7-slide Space Apps demo, no language switch
+     defense     DEF_SLIDES  5-slide deck for the local Zoom defense, Ukrainian by default */
+const MODE = typeof DEF_SLIDES !== 'undefined' ? 'defense' : typeof SUB_SLIDES !== 'undefined' ? 'submission' : 'full';
+const DECK = MODE === 'defense' ? DEF_SLIDES : MODE === 'submission' ? SUB_SLIDES : SLIDES;
+const ONE_LANG = MODE === 'submission';
+/* the language choice is kept per deck: the full deck remembers it (localStorage); the defense deck only
+   for this tab (sessionStorage), so a fresh open for the defense always starts in Ukrainian */
+const KEY = MODE === 'defense' ? 'asklepios-defense-lang' : 'asklepios-deck-lang';
+function langStore() { try { return MODE === 'defense' ? window.sessionStorage : window.localStorage; } catch (e) { return null; } }
+/* language: ?lang= wins, then the saved choice, then the default
+   (full deck: Ukrainian only for a uk-* browser; defense deck: always Ukrainian) */
+let L = 'en';
+if (!ONE_LANG) {
+  if (MODE === 'defense') L = 'uk';
+  else try { if (String(navigator.language || '').toLowerCase().startsWith('uk')) L = 'uk'; } catch (e) { /* no navigator */ }
+  try { const s = langStore().getItem(KEY); if (s === 'uk' || s === 'en') L = s; } catch (e) { /* storage blocked: keep default */ }
+  try { const q = new URLSearchParams(location.search).get('lang'); if (q === 'uk' || q === 'en') L = q; } catch (e) { /* no query support */ }
+}
+const RMQ = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+let RM = !!(RMQ && RMQ.matches);
+
+/* ---------- text helpers (used by slide builders) ---------- */
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function D(ms) { return `style="--d:${ms}ms"`; }
+/* a LINK_INFO value counts as filled once the {{…}} placeholder has been replaced */
+function filled(v) { return !!String(v || '').trim() && String(v).indexOf('{{') < 0; }
+/* kinetic words: each word unmasks with a stagger; *accent*, \n = line break */
+function kt(s, d0 = 0, st = 60) {
+  let n = 0, acc = false;
+  return String(s).split('\n').map(line => line.split(' ').filter(Boolean).map(w => {
+    let on = acc;
+    if (w[0] === '*') { on = acc = true; w = w.slice(1); }
+    const j = w.indexOf('*');
+    if (j >= 0) { w = w.slice(0, j) + w.slice(j + 1); acc = false; }
+    return `<span class="w"><span class="wi${on ? ' acc' : ''}" style="--d:${d0 + n++ * st}ms">${esc(w)}</span></span>`;
+  }).join(' ')).join('<br>');
+}
+/* kinetic letters for the big titles */
+function kc(s, d0 = 0, st = 50) {
+  return [...String(s)].map((c, k) => `<span class="w"><span class="wi" style="--d:${d0 + k * st}ms">${c === ' ' ? '&nbsp;' : esc(c)}</span></span>`).join('');
+}
+function hd(t, i) {
+  return `<div class="kick up" ${D(0)}><b>${String(i + 1).padStart(2, '0')}</b><i></i>${esc(t.k)}</div><h2 class="h2">${kt(t.h, 120, 55)}</h2>` +
+    (t.lead ? `<p class="lead up" ${D(500)}>${esc(t.lead)}</p>` : '');
+}
+function fmt(v, dec = 0) {
+  const s = (+v).toFixed(dec).split('.');
+  s[0] = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, L === 'uk' ? ' ' : ',');
+  return s.join(L === 'uk' ? ',' : '.');
+}
+function cnt(to, dec = 0, delay = 300, dur = 1600) {
+  return `<span class="cnt" data-to="${to}" data-dec="${dec}" data-delay="${delay}" data-dur="${dur}">${fmt(to, dec)}</span>`;
+}
+/* how to move around, for people who open the deck on their own (first slide) */
+function hint() {
+  const H = L === 'uk' ? [['→', ' або клік — далі'], ['L', ' — мова'], ['F', ' — повний екран']]
+    : [['→', ' or click — next'], ['L', ' — language'], ['F', ' — full screen']];
+  return H.filter(h => !(ONE_LANG && h[0] === 'L')).map(h => `<span><kbd>${esc(h[0])}</kbd>${esc(h[1])}</span>`).join(' · ');
+}
+/* one "label: value" row of the team block */
+function teamRow(label, value, wide) {
+  return `<div class="team set${wide ? ' wide' : ''}"><span class="team-l">${esc(label)}</span><b class="team-v">${esc(value)}</b></div>`;
+}
+/* team members in the slide's language (TEAM_INFO.members = { uk, en }) */
+function members(l) { const m = TEAM_INFO.members; return typeof m === 'string' ? m : (m[l] || m.en || ''); }
+const ICONS = {
+  user: 'M24 23a8 8 0 1 0 0-16a8 8 0 1 0 0 16M9 41c1.5-8 7.5-12 15-12s13.5 4 15 12',
+  chat: 'M8 11h32v21H22l-9 7v-7H8zM16 19h16M16 25h10',
+  quest: 'M17 17a7 7 0 1 1 10 6.3c-2 1-3 2.4-3 4.7v1.5M24 36v.5',
+  check: 'M14 9h20v32H14zM19 6h10v6H19zM18 26l5 5 8-9',
+  clock: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M24 14v10l7 5',
+  pulse: 'M4 26h9l4-10 6 20 5-14 3 4h13',
+  thermo: 'M20 28V10a4 4 0 0 1 8 0v18a8 8 0 1 1-8 0zM24 20v12',
+  bt: 'M15 15l18 18-9 8V7l9 8-18 18',
+  sigoff: 'M6 20a26 26 0 0 1 36 0M12 27a17 17 0 0 1 24 0M18 34a8 8 0 0 1 12 0M24 40v.5M8 8l32 32',
+  nodoc: 'M19 8h10v11h11v10H29v11H19V29H8V19h11zM7 41L41 7',
+  xcirc: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M17 17l14 14M31 17L17 31',
+  file: 'M13 6h15l9 9v27H13zM28 6v9h9M18 25h12M18 31h12',
+  globe: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M6 24h36M24 6c7 7 7 29 0 36M24 6c-7 7-7 29 0 36',
+  search: 'M21 33a12 12 0 1 0 0-24a12 12 0 1 0 0 24M30 30l10 10',
+  pen: 'M10 38l3-11 18-18 8 8-18 18zM27 13l8 8',
+  pill: 'M17 31l14-14a7 7 0 0 1 10 10L27 41a7 7 0 0 1-10-10zM24 24l7 7',
+  alert: 'M24 7L43 40H5zM24 19v10M24 34v.5',
+  swap: 'M8 17h28l-7-7M40 31H12l7 7',
+  shield: 'M24 5l16 6v12c0 10-7 17-16 20C15 40 8 33 8 23V11zM17 24l5 5 9-10',
+  cam: 'M6 15h9l3-5h12l3 5h9v23H6zM24 33a7 7 0 1 0 0-14a7 7 0 1 0 0 14',
+  chip: 'M14 14h20v20H14zM19 8v6M24 8v6M29 8v6M19 34v6M24 34v6M29 34v6M8 19h6M8 24h6M8 29h6M34 19h6M34 24h6M34 29h6',
+  wind: 'M6 18h22a5 5 0 1 0-5-5M6 26h30a5 5 0 1 1-5 5M6 34h14',
+  rad: 'M24 21a3 3 0 1 0 0 6a3 3 0 1 0 0-6M21 19L14 7a20 20 0 0 0-10 17h14M27 19l7-12a20 20 0 0 1 10 17H30M21 29l-7 12a20 20 0 0 0 20 0l-7-12',
+  layers: 'M24 6l18 9-18 9L6 15zM6 24l18 9 18-9M6 33l18 9 18-9',
+  shirt: 'M17 7l-11 6 4 9 5-2v21h18V20l5 2 4-9-11-6c-1 3-4 5-7 5s-6-2-7-5zM18 27h4l2-5 3 10 2-5h3',
+  link: 'M20 28l8-8M17 24l-4 4a6 6 0 0 0 8 8l4-4M31 24l4-4a6 6 0 0 0-8-8l-4 4',
+  earth: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M10 16c5 1 7 4 6 8s3 6 6 6 3 5 1 10M30 8c-1 4 2 6 5 6s4 4 3 8',
+  /* daily check-in, challenge indicators, NASA hazards */
+  cal: 'M9 12h30v28H9zM9 20h30M17 7v9M31 7v9M16 28h4M22 28h4M28 28h4M16 34h4M22 34h4',
+  bell: 'M14 33V22a10 10 0 0 1 20 0v11l3 4H11zM21 41h6',
+  heart: 'M24 40S8 30 8 19a8 8 0 0 1 16-3a8 8 0 0 1 16 3c0 11-16 21-16 21zM13 24h6l2-4 4 8 2-4h8',
+  gauge: 'M7 31a17 17 0 0 1 34 0M24 31l8-9M12 31h3M33 31h3M24 15v3M24 31v.5',
+  drop: 'M24 6S12 20 12 29a12 12 0 0 0 24 0C36 20 24 6 24 6zM19 30a5 5 0 0 0 5 5',
+  moon: 'M31 8a16 16 0 1 0 9 26A13 13 0 0 1 31 8z',
+  smile: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M17 28c2 3 4.5 4.5 7 4.5s5-1.5 7-4.5M18 19v1.5M30 19v1.5',
+  iso: 'M15 7h18a7 7 0 0 1 7 7v20a7 7 0 0 1-7 7H15a7 7 0 0 1-7-7V14a7 7 0 0 1 7-7zM24 23a4.5 4.5 0 1 0 0-9a4.5 4.5 0 1 0 0 9M16 35c1.2-4.5 4-7 8-7s6.8 2.5 8 7',
+  grav: 'M24 6v25M15 22l9 9 9-9M9 40h30M14 40c0-3 4-5 10-5s10 2 10 5',
+  dist: 'M11 18a6 6 0 1 0 0 12a6 6 0 1 0 0-12M38 20a4 4 0 1 0 0 8a4 4 0 1 0 0-8M20 24h2.5M26 24h2.5M32 24h1',
+  guide: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M30 18l-4 8-8 4 4-8z',
+  play: 'M24 6a18 18 0 1 0 0 36a18 18 0 1 0 0-36M20 16l12 8-12 8z'
+};
+function ico(n, c) { return `<svg class="ic${c ? ' ' + c : ''}" viewBox="0 0 48 48" aria-hidden="true"><path class="draw" pathLength="1" d="${ICONS[n] || ''}"/></svg>`; }
+function icb(n) { return `<div class="ico">${ico(n)}</div>`; }
+
+/* ---------- timeline helpers: bumping EP cancels everything of the previous slide ---------- */
+const easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeIO = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const easeExpo = k => k >= 1 ? 1 : 1 - Math.pow(2, -10 * k);
+let EP = 0;
+function later(ms, fn) { const e = EP; if (RM) { fn(); return; } setTimeout(() => { if (e === EP) fn(); }, ms); }
+function tween(dur, fn, delay = 0, ease = easeOut, init = true) {
+  if (RM) { fn(1); return; }
+  const e = EP, t0 = performance.now() + delay;
+  if (init) fn(ease(0));
+  const step = now => {
+    if (e !== EP) return;
+    const k = Math.min(1, Math.max(0, (now - t0) / dur));
+    if (now >= t0) fn(ease(k));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function tick(fn) {
+  const e = EP, t0 = performance.now();
+  const step = now => { if (e !== EP) return; if (fn(Math.max(0, now - t0)) !== false) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function typeIn(el, text, delay = 0, cps = 24, done) {
+  if (!el) return;
+  if (RM) { el.textContent = text; if (done) done(); return; }
+  el.textContent = '';
+  let fired = false;
+  tween(text.length * 1000 / cps, k => {
+    el.textContent = text.slice(0, Math.round(k * text.length));
+    if (k >= 1 && !fired) { fired = true; if (done) done(); }
+  }, delay, x => x, false);
+}
+function runCounters(root) {
+  root.querySelectorAll('.cnt').forEach(c => {
+    const to = +c.dataset.to, dec = +c.dataset.dec || 0;
+    tween(+c.dataset.dur || 1600, k => { c.textContent = fmt(to * k, dec); }, +c.dataset.delay || 0, easeExpo);
+  });
+}
+
+/* ---------- deck ---------- */
+const stage = document.getElementById('stage'), deck = document.getElementById('deck'), sky = document.getElementById('sky');
+const bar = document.getElementById('bar'), num = document.getElementById('num'), bname = document.getElementById('bname'), sw = document.getElementById('sweep');
+const langBtns = [...document.querySelectorAll('#lang button')];
+stage.classList.add('m-' + MODE); /* deck-wide styles: the defense deck sets larger type */
+const N = DECK.length;
+const base = k => 'slide s-' + DECK[k].id;
+const pad = n => String(n).padStart(2, '0');
+const els = DECK.map((s, k) => {
+  const el = document.createElement('section');
+  el.className = base(k); el._t = 0;
+  el.setAttribute('aria-roledescription', 'slide');
+  deck.appendChild(el);
+  return el;
+});
+let cur = -1;
+
+function go(i, o) {
+  o = o || {};
+  i = Math.max(0, Math.min(N - 1, i | 0));
+  if (i === cur && !o.force) return;
+  const prev = cur, dir = prev < 0 || i >= prev ? 'f' : 'b';
+  const anim = !o.instant && !RM && prev >= 0 && prev !== i;
+  EP++;
+  els.forEach((el, k) => { if (k !== i && k !== prev && el.className !== base(k)) { el._t++; el.className = base(k); } });
+  if (prev >= 0 && prev !== i) {
+    const p = els[prev], tp = ++p._t;
+    if (anim) {
+      p.className = base(prev) + ' play out-' + dir;
+      setTimeout(() => { if (p._t === tp) p.className = base(prev); }, 720);
+    } else p.className = base(prev);
+  }
+  const el = els[i], tk = ++el._t, s = DECK[i];
+  el.className = base(i);
+  el.innerHTML = s.html(s[L], L, i);
+  el.setAttribute('aria-label', (i + 1) + ' / ' + N);
+  void el.offsetWidth; /* restart every entrance animation */
+  el.className = base(i) + ' on play' + (anim ? ' in-' + dir : '');
+  if (anim) setTimeout(() => { if (el._t === tk) el.classList.remove('in-' + dir); }, 1000);
+  cur = i;
+  runCounters(el);
+  if (s.play) s.play(el, s[L], L);
+  bar.style.width = ((i + 1) / N * 100) + '%';
+  num.textContent = pad(i + 1) + ' / ' + pad(N);
+  stage.classList.toggle('edge', !!s.edge);
+  writeHash(i);
+  setMood(i, prev < 0);
+  if (anim) { sw.className = ''; void sw.offsetWidth; sw.className = 'sw-' + dir; }
+}
+
+/* ---------- starfield + glow (canvas, drawn in 1920x1080 design space) ---------- */
+const cx = sky.getContext('2d');
+const COL = { m: [214, 104, 58], r: [229, 72, 77], t: [12, 135, 131] };
+const mood = { x: 1480, y: 920, r: 860, a: .3, c: COL.m.slice() }, moodT = { x: 1480, y: 920, r: 860, a: .3, c: COL.m.slice() };
+let cam = 0, camT = 0, mx = 0, my = 0, smx = 0, smy = 0, SC = 1, KX = 1, looping = false;
+const WRAP = 2400;
+const LAYERS = [{ n: 230, r0: .5, r1: 1.1, v: 4, z: .12, a: .55 }, { n: 110, r0: .9, r1: 1.6, v: 9, z: .3, a: .75 }, { n: 36, r0: 1.4, r1: 2.4, v: 18, z: .6, a: .95 }];
+const STARS = LAYERS.map(Ly => Array.from({ length: Ly.n }, () => ({ x: Math.random() * WRAP, y: Math.random() * 1080, r: Ly.r0 + Math.random() * (Ly.r1 - Ly.r0), p: Math.random() * 6.283, s: .4 + Math.random() * 1.4 })));
+function setMood(i, snap) {
+  const m = DECK[i].mood || [1500, 900, 850, .26, 'm'];
+  moodT.x = m[0]; moodT.y = m[1]; moodT.r = m[2]; moodT.a = m[3]; moodT.c = (COL[m[4]] || COL.m).slice();
+  camT = i * 320;
+  if (snap || RM) { mood.x = m[0]; mood.y = m[1]; mood.r = m[2]; mood.a = m[3]; mood.c = moodT.c.slice(); cam = camT; }
+  if (RM) drawSky(performance.now());
+}
+function glow(x, y, r, rgb, a) {
+  const g = cx.createRadialGradient(x, y, 0, x, y, r), c = rgb.map(v => Math.round(v)).join(',');
+  g.addColorStop(0, `rgba(${c},${a})`); g.addColorStop(.45, `rgba(${c},${a * .35})`); g.addColorStop(1, `rgba(${c},0)`);
+  cx.fillStyle = g; cx.fillRect(0, 0, 1920, 1080);
+}
+function drawSky(now) {
+  const t = now / 1000, f = RM ? 1 : .035;
+  cam += (camT - cam) * (RM ? 1 : .04);
+  smx += (mx - smx) * .05; smy += (my - smy) * .05;
+  mood.x += (moodT.x - mood.x) * f; mood.y += (moodT.y - mood.y) * f; mood.r += (moodT.r - mood.r) * f; mood.a += (moodT.a - mood.a) * f;
+  for (let j = 0; j < 3; j++) mood.c[j] += (moodT.c[j] - mood.c[j]) * f;
+  cx.setTransform(KX, 0, 0, KX, 0, 0);
+  cx.clearRect(0, 0, 1920, 1080);
+  glow(mood.x + Math.sin(t * .13) * 40 - smx * 30, mood.y + Math.cos(t * .11) * 25 - smy * 20, mood.r, mood.c, mood.a);
+  glow(240 + Math.sin(t * .09) * 50 - smx * 15, 80 + Math.cos(t * .07) * 30, 950, COL.t, .16);
+  cx.fillStyle = '#fff';
+  for (let li = 0; li < 3; li++) {
+    const Ly = LAYERS[li], off = cam * Ly.z + t * Ly.v + smx * Ly.z * 60, oy = smy * Ly.z * 40;
+    for (const s of STARS[li]) {
+      const x = ((s.x - off) % WRAP + WRAP) % WRAP - 240;
+      if (x < -4 || x > 1924) continue;
+      cx.globalAlpha = Ly.a * (RM ? .85 : .55 + .45 * Math.sin(t * s.s + s.p));
+      cx.beginPath(); cx.arc(x, s.y - oy, s.r, 0, 6.283); cx.fill();
+    }
+  }
+  cx.globalAlpha = 1;
+}
+function frame(now) { if (RM) { looping = false; return; } drawSky(now); requestAnimationFrame(frame); }
+function startLoop() { if (!looping && !RM) { looping = true; requestAnimationFrame(frame); } }
+function fit() {
+  SC = Math.min(innerWidth / 1920, innerHeight / 1080) || 1;
+  stage.style.transform = `translate(-50%,-50%) scale(${SC})`;
+  KX = Math.min(2, SC * (window.devicePixelRatio || 1));
+  sky.width = Math.round(1920 * KX); sky.height = Math.round(1080 * KX);
+  drawSky(performance.now());
+}
+
+/* ---------- hash, language, input ---------- */
+function readHash() { const m = /^#(\d+)/.exec(location.hash); return m ? Math.max(0, Math.min(N - 1, +m[1] - 1)) : 0; }
+function writeHash(i) {
+  const h = '#' + (i + 1);
+  if (location.hash === h) return;
+  try { history.replaceState(null, '', h); } catch (e) { location.hash = h; }
+}
+const TITLES = {
+  full: { uk: 'Презентація Асклепія', en: 'Asklepios Pitch Deck' },
+  submission: { uk: 'Asklepios — Project Demo', en: 'Asklepios — Project Demo' },
+  defense: { uk: 'Асклепій — захист проєкту', en: 'Asklepios — Project Defense' }
+};
+function applyLang() {
+  document.documentElement.lang = L;
+  document.title = TITLES[MODE][L];
+  bname.textContent = L === 'uk' ? 'Асклепій' : 'Asklepios';
+  langBtns.forEach(b => { const on = b.dataset.l === L; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+}
+function setLang(l) {
+  if (ONE_LANG || (l !== 'uk' && l !== 'en') || l === L) return;
+  L = l;
+  try { langStore().setItem(KEY, L); } catch (e) { /* ignore */ }
+  applyLang();
+  go(cur, { force: true, instant: true }); /* re-render text + replay this slide */
+}
+function toggleFS() {
+  try {
+    const d = document, p = d.fullscreenElement ? d.exitFullscreen && d.exitFullscreen() : d.documentElement.requestFullscreen && d.documentElement.requestFullscreen();
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) { /* fullscreen not allowed */ }
+}
+function setRM(v) { RM = v; document.documentElement.classList.toggle('rm', RM); if (RM) drawSky(performance.now()); else startLoop(); }
+
+langBtns.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setLang(b.dataset.l); b.blur(); }));
+addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const k = e.key;
+  if ((k === ' ' || k === 'Enter') && e.target && e.target.closest && e.target.closest('button, a')) return;
+  if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !e.shiftKey) || k === 'Enter') { e.preventDefault(); go(cur + 1); }
+  else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || (k === ' ' && e.shiftKey) || k === 'Backspace') { e.preventDefault(); go(cur - 1); }
+  else if (k === 'Home') { e.preventDefault(); go(0); }
+  else if (k === 'End') { e.preventDefault(); go(N - 1); }
+  else if (!ONE_LANG && !e.repeat && (e.code === 'KeyL' || k === 'l' || k === 'L' || k === 'д' || k === 'Д')) setLang(L === 'uk' ? 'en' : 'uk');
+  else if (!e.repeat && e.code === 'KeyF') toggleFS();
+});
+let lastSwipe = 0, tx0 = null, ty0 = 0, hideT = 0;
+/* click: a narrow strip on the left goes back, anywhere else goes forward ("click — next") */
+addEventListener('click', e => {
+  if (e.button !== 0 || Date.now() - lastSwipe < 600) return;
+  const t = e.target && e.target.closest ? e.target : null;
+  if (t && t.closest('#lang, a, button')) return;
+  if (e.clientX < innerWidth * 0.2) go(cur - 1); else go(cur + 1);
+});
+addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY; } else tx0 = null;
+}, { passive: true });
+addEventListener('touchend', e => {
+  if (tx0 === null) return;
+  const t = e.changedTouches[0], dx = t.clientX - tx0, dy = t.clientY - ty0;
+  tx0 = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2) { lastSwipe = Date.now(); go(cur + (dx < 0 ? 1 : -1)); }
+}, { passive: true });
+addEventListener('mousemove', e => {
+  mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5;
+  document.body.classList.remove('nocur');
+  clearTimeout(hideT);
+  hideT = setTimeout(() => document.body.classList.add('nocur'), 2500);
+});
+addEventListener('hashchange', () => { const i = readHash(); if (i !== cur) go(i); });
+addEventListener('resize', fit);
+if (RMQ) {
+  const onRM = e => { setRM(e.matches); go(cur, { force: true, instant: true }); };
+  if (RMQ.addEventListener) RMQ.addEventListener('change', onRM); else if (RMQ.addListener) RMQ.addListener(onRM);
+}
+
+/* ---------- start ---------- */
+document.documentElement.classList.toggle('rm', RM);
+applyLang();
+fit();
+go(readHash(), { instant: true });
+startLoop();
+
+</script>
+</body>
+</html>
