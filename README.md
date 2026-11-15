@@ -2,7 +2,7 @@
 
 **NASA Space Apps Challenge 2026** · Local event: Dnipro, Ukraine · Challenge: **Create Health Monitoring Software for Astronauts on Space Missions**
 
-**Team vod0laz1:** Maksym (captain), Dmytro (structural engineer), Denys (designer), Matvii (front-end developer), Stanislav (back-end developer)
+**Team vod0laz1:** Matvii (team owner, front-end developer), Maksym (captain), Dmytro (structural engineer), Denys (designer), Stanislav (back-end developer)
 
 **Live app:** https://kalagan1337.github.io/asklepios/ · **30-second demo:** https://kalagan1337.github.io/asklepios/Asklepios-demo-30s-EN.mp4
 

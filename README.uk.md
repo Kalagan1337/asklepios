@@ -2,7 +2,7 @@
 
 **NASA Space Apps Challenge 2026** · Локальний етап: Дніпро, Україна · Завдання: **Create Health Monitoring Software for Astronauts on Space Missions**
 
-**Команда vod0laz1:** Максим (капітан), Дмитро (інженер структури), Денис (дизайнер), Матвій (front-end розробник), Станіслав (back-end розробник)
+**Команда vod0laz1:** Матвій (власник команди, front-end розробник), Максим (капітан), Дмитро (інженер структури), Денис (дизайнер), Станіслав (back-end розробник)
 
 **Застосунок онлайн:** https://kalagan1337.github.io/asklepios/?lang=uk · **30-секундне демо:** https://kalagan1337.github.io/asklepios/Asklepios-demo-30s-EN.mp4
 
