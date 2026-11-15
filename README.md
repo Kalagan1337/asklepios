@@ -1,9 +1,10 @@
 # Asklepios (Асклепій): an offline AI medic for a crew on its way to Mars
 
 **NASA Space Apps Challenge 2026** · Local event: Dnipro, Ukraine · Challenge: **Create Health Monitoring Software for Astronauts on Space Missions**
-**Team vod0laz1:** Maksym, Matvii, Dmytro, Stanislav, Denys
 
-**Live app:** {{APP_LINK}} · **30-second demo:** {{DEMO_LINK}}
+**Team vod0laz1:** Maksym (captain), Dmytro (structural engineer), Denys (designer), Matvii (front-end developer), Stanislav (back-end developer)
+
+**Live app:** https://kalagan1337.github.io/asklepios/ · **30-second demo:** https://kalagan1337.github.io/asklepios/Asklepios-demo-30s-EN.mp4
 
 [English](#english) · [Українська](#українська)
 
@@ -33,7 +34,7 @@ Everything is **one HTML file (1.44 MB)** that runs in any modern browser with *
 | `index.html` | **The app.** Double-click to open it in Chrome, Edge or Firefox. Works offline. Language: UA / EN at the top. |
 | `presentation.html` | Full deck, 14 slides, English and Ukrainian. → or a click: next; the left edge: back; L: language; F: full screen. |
 | `pitch-7-slides.html` | 7-slide English deck (title included), the alternative project demo. |
-| `defense.html` | 5-slide deck for the live defense; opens in Ukrainian, `?lang=en` or L switches to English. |
+| `defense.html` | 5-slide deck for the live defense, English and Ukrainian: `?lang=uk` or `?lang=en` (or L) picks the language. |
 | `Asklepios-demo-30s-EN.mp4` | The 30-second demo (29.6 s), English subtitles, silent. |
 | `Asklepios-video-EN.mp4` | The full film (1:48), English subtitles, silent. |
 | `screenshots/` | Five 1920×1080 screenshots of the English app. |
@@ -273,7 +274,7 @@ This is engineering validation, not clinical validation. The next step is a set 
 | `index.html` | **Застосунок.** Двічі клацніть: відкриється в Chrome, Edge або Firefox. Працює без інтернету. Мова: UA / EN угорі. |
 | `presentation.html` | Повна презентація, 14 слайдів, українською й англійською. → або клацання: далі; лівий край: назад; L: мова; F: повний екран. |
 | `pitch-7-slides.html` | 7 слайдів англійською (разом із титульним) — альтернативне демо проєкту. |
-| `defense.html` | 5 слайдів для захисту; відкривається українською, `?lang=en` або L — англійська. |
+| `defense.html` | 5 слайдів для захисту, українською й англійською: мову обирає `?lang=uk` або `?lang=en` (чи L). |
 | `Asklepios-demo-30s-EN.mp4` | 30-секундне демо (29,6 с), англійські субтитри, без звуку. |
 | `Asklepios-video-EN.mp4` | Повний фільм (1:48), англійські субтитри, без звуку. |
 | `screenshots/` | П’ять знімків англійського інтерфейсу 1920×1080. |
